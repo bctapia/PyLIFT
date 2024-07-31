@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pylift package &mdash; PyLIFT 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="PyLIFT documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PyLIFT
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">pylift package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pylift.builder">pylift.builder module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.builder.add_ff_params"><code class="docutils literal notranslate"><span class="pre">add_ff_params()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.builder.assign_linkers"><code class="docutils literal notranslate"><span class="pre">assign_linkers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.builder.convert_to_pseudo"><code class="docutils literal notranslate"><span class="pre">convert_to_pseudo()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.builder.remove_h"><code class="docutils literal notranslate"><span class="pre">remove_h()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.builder.types_to_names"><code class="docutils literal notranslate"><span class="pre">types_to_names()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pylift.reader">pylift.reader module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#license">License</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.reader.read_frcmod"><code class="docutils literal notranslate"><span class="pre">read_frcmod()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.reader.read_gaff2"><code class="docutils literal notranslate"><span class="pre">read_gaff2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.reader.read_mol2"><code class="docutils literal notranslate"><span class="pre">read_mol2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.reader.read_topo"><code class="docutils literal notranslate"><span class="pre">read_topo()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pylift.utilities">pylift.utilities module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id55">License</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.utilities.cleanup_pylift"><code class="docutils literal notranslate"><span class="pre">cleanup_pylift()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.utilities.read_json"><code class="docutils literal notranslate"><span class="pre">read_json()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.utilities.write_json"><code class="docutils literal notranslate"><span class="pre">write_json()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pylift.vmd">pylift.vmd module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id56">License</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.vmd.run_vmd_commands"><code class="docutils literal notranslate"><span class="pre">run_vmd_commands()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.vmd.test_vmd_exec"><code class="docutils literal notranslate"><span class="pre">test_vmd_exec()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.vmd.topo_write"><code class="docutils literal notranslate"><span class="pre">topo_write()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pylift.writer">pylift.writer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id57">License</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.writer.write_lammps"><code class="docutils literal notranslate"><span class="pre">write_lammps()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.writer.write_mol2"><code class="docutils literal notranslate"><span class="pre">write_mol2()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pylift">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id58">License</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.pylift_help"><code class="docutils literal notranslate"><span class="pre">pylift_help()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pylift.pylift_license"><code class="docutils literal notranslate"><span class="pre">pylift_license()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PyLIFT</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">pylift package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/pylift.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pylift-package">
+<h1>pylift package<a class="headerlink" href="#pylift-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pylift.builder">
+<span id="pylift-builder-module"></span><h2>pylift.builder module<a class="headerlink" href="#module-pylift.builder" title="Link to this heading"></a></h2>
+<p>=== pylift.builder module ===</p>
+<p>License: The MIT License (MIT)</p>
+<p>Copyright (c) 2024 Brandon C. Tapia</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.builder.add_ff_params">
+<span class="sig-prename descclassname"><span class="pre">pylift.builder.</span></span><span class="sig-name descname"><span class="pre">add_ff_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lammps_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ff_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing_ff_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pseudoatoms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approx_match</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_match</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylift/builder.html#add_ff_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.builder.add_ff_params" title="Link to this definition"></a></dt>
+<dd><p>Adds forcefield parameters from a specified forcefield to
+pair, bond, angle, dihedral, and improper topology information</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lammps_dict</strong> (<em>dict</em>) – contains skeleton topology for molecule</p></li>
+<li><p><strong>ff_dict</strong> (<em>dict</em>) – contains forcefield to apply</p></li>
+<li><p><strong>missing_ff_params</strong> (<em>dict</em>) – contains FRCMOD information</p></li>
+<li><p><strong>pseudoatoms</strong> (<em>bool</em>) – whether the simulation is AA (False) or UA (True)</p></li>
+<li><p><strong>approx_match</strong> (<em>bool</em>) – whether only exact matches to forcefield types should be found
+(e.g., if  approx_match = True then c3-c3-ca-c3 would first look
+for parameters for c3-c3-ca-c3 and if not found, then X-c3-ca-X)</p></li>
+<li><p><strong>user_match</strong> (<em>dict</em><em>[</em><em>str</em><em>]</em>) – contains a dictionary of current atoms (key) to atom to search
+for instead (value) (e.g., if {‘c3’, ‘cy’} is specified then X-c3-cy-X would first
+look for parameters for X-c3-cy-X and if not found, then X-c3-c3-X)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>lammps_dict like dictionary containing forcefield parameters as well</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.builder.assign_linkers">
+<span class="sig-prename descclassname"><span class="pre">pylift.builder.</span></span><span class="sig-name descname"><span class="pre">assign_linkers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol2_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linker_atoms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linker_identifier</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'L'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylift/builder.html#assign_linkers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.builder.assign_linkers" title="Link to this definition"></a></dt>
+<dd><blockquote>
+<div><p>PyLIFT.builder.assign_linkers</p>
+</div></blockquote>
+<p>Adds an identifier to specific atoms to prepare them for linking in Polymatic</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol2_dict</strong> (<em>dict</em>) – contains molecule information generated with PyLIFT.reader.read_mol2</p></li>
+<li><p><strong>linker_atoms</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – id of atoms to assign identifier to</p></li>
+<li><p><strong>linker_identifier</strong> (<em>str</em>) – what the identifier is</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>mol2_dict similar dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.builder.convert_to_pseudo">
+<span class="sig-prename descclassname"><span class="pre">pylift.builder.</span></span><span class="sig-name descname"><span class="pre">convert_to_pseudo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol2_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h_identifiers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">['h',</span> <span class="pre">'H']</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/pylift/builder.html#convert_to_pseudo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.builder.convert_to_pseudo" title="Link to this definition"></a></dt>
+<dd><p>Converts all-atom molecules type names to be able to identify united-atom molecules.
+Atom types are updated by appending the number of hydrogens onto the end
+(e.g., a c3 gaff2 type is retyped as c33 if it is connected to three hydrogens)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol2_dict</strong> (<em>dict</em>) – contains molecule information generated with PyLIFT.reader.read_mol2</p></li>
+<li><p><strong>h_identifiers</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – contains all identifiers hydrogen atoms may be referenced as</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>mol2_dict similar dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.builder.remove_h">
+<span class="sig-prename descclassname"><span class="pre">pylift.builder.</span></span><span class="sig-name descname"><span class="pre">remove_h</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol2_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h_identifiers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">['h',</span> <span class="pre">'H']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specific_atoms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_delete</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylift/builder.html#remove_h"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.builder.remove_h" title="Link to this definition"></a></dt>
+<dd><p>Removes hydrogen atoms. If specific_atoms is not specified, all hydrogens are removed.
+If specific_atoms is specified, only num_delete amount of hydrogens are removed from those atoms</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol2_dict</strong> (<em>dict</em>) – contains molecule information generated with PyLIFT.reader.read_mol2</p></li>
+<li><p><strong>h_identifiers</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – contains all identifiers hydrogen atoms may be referenced as</p></li>
+<li><p><strong>specific_atoms</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – if specified, heavy atoms to remove hydrogens from.
+If None, all hydrogens removed</p></li>
+<li><p><strong>num_delete</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – if specific_atoms is specified, num_delete specifies
+the number of hydrogens to remove from each specified atom</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>mol2_dict similar dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.builder.types_to_names">
+<span class="sig-prename descclassname"><span class="pre">pylift.builder.</span></span><span class="sig-name descname"><span class="pre">types_to_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol2_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/pylift/builder.html#types_to_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.builder.types_to_names" title="Link to this definition"></a></dt>
+<dd><p>Mol2 files have unique columns for atom types and atom names.
+This function copies the forcefield descriptive atom types to the atom names
+as TopoTools uses atom names to generate LAMMPS skeleton files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol2_dict</strong> (<em>dict</em>) – contains molecule information generated with PyLIFT.reader.read_mol2</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>mol2_dict similar dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-pylift.reader">
+<span id="pylift-reader-module"></span><h2>pylift.reader module<a class="headerlink" href="#module-pylift.reader" title="Link to this heading"></a></h2>
+<section id="license">
+<h3>License<a class="headerlink" href="#license" title="Link to this heading"></a></h3>
+<p>The MIT License (MIT)</p>
+<p>Copyright (c) 2024 Brandon C. Tapia</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.</p>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.reader.read_frcmod">
+<span class="sig-prename descclassname"><span class="pre">pylift.reader.</span></span><span class="sig-name descname"><span class="pre">read_frcmod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frcmod_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_json</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/pylift/reader.html#read_frcmod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.reader.read_frcmod" title="Link to this definition"></a></dt>
+<dd><p>Format of returned frcmod_dict:
+frcmod_dict</p>
+<blockquote>
+<div><p><a href="#id1"><span class="problematic" id="id2">|</span></a>–mass_dict
+<a href="#id3"><span class="problematic" id="id4">|</span></a>–bond_dict
+<a href="#id5"><span class="problematic" id="id6">|</span></a>–angle_dict
+<a href="#id7"><span class="problematic" id="id8">|</span></a>–dihedral_dict</p>
+<blockquote>
+<div><dl class="simple">
+<dt><a href="#id9"><span class="problematic" id="id10">|</span></a>–line index</dt><dd><p><a href="#id11"><span class="problematic" id="id12">|</span></a>–atom_1
+–atom_2
+–atom_3
+–atom_4
+–m (Fourier info 1)
+–K (Fourier info 2)
+–n (Fourier info 3)
+–d (Fourier info 4)
+–r_atom_1 (replacement atom 1)
+–r_atom_2 (replacement atom 2)
+–r_atom_3 (replacement atom 3)
+–r_atom_4 (replacement atom 4)
+–penalty_score</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="simple">
+<dt><a href="#id13"><span class="problematic" id="id14">|</span></a>–improper_dict</dt><dd><dl class="simple">
+<dt><a href="#id15"><span class="problematic" id="id16">|</span></a>–line index</dt><dd><p><a href="#id17"><span class="problematic" id="id18">|</span></a>–atom_1
+–atom_2
+–atom_3
+–atom_4
+–K (Fourier info 1)
+–d (Fourier info 2)
+–n (Fourier info 3)
+–r_atom_1 (replacement atom 1 if provided)
+–r_atom_2 (replacement atom 2 if provided)
+–r_atom_3 (replacement atom 3 if provided)
+–r_atom_4 (replacement atom 4 if provided)
+–penalty_score (if provided)
+–Information (if provided)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p><a href="#id19"><span class="problematic" id="id20">|</span></a>–nonbon_dict</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.reader.read_gaff2">
+<span class="sig-prename descclassname"><span class="pre">pylift.reader.</span></span><span class="sig-name descname"><span class="pre">read_gaff2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gaff2_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_json</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/pylift/reader.html#read_gaff2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.reader.read_gaff2" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Parse a GAFF2 file to extract atom, bond, angle, and other data sections.</dt><dd><p>Format of returned gaff2_dict:</p>
+</dd>
+<dt>gaff2_dict</dt><dd><dl class="simple">
+<dt><a href="#id21"><span class="problematic" id="id22">|</span></a>–Information</dt><dd><dl class="simple">
+<dt><a href="#id23"><span class="problematic" id="id24">|</span></a>–Header</dt><dd><p>–Forcefield
+–Version
+–Date
+–Pair_Type
+–Bond_Type
+–Angle_Type
+–Dihedral_Type
+–Improper_Type</p>
+</dd>
+</dl>
+</dd>
+<dt><a href="#id25"><span class="problematic" id="id26">|</span></a>–Atoms</dt><dd><dl class="simple">
+<dt><a href="#id27"><span class="problematic" id="id28">|</span></a>–line index</dt><dd><dl class="simple">
+<dt><a href="#id29"><span class="problematic" id="id30">|</span></a>–Atom</dt><dd><p>–Mass
+–Unknown Param
+–Information</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt><a href="#id31"><span class="problematic" id="id32">|</span></a>–Bonds</dt><dd><dl class="simple">
+<dt><a href="#id33"><span class="problematic" id="id34">|</span></a>–line index</dt><dd><dl class="simple">
+<dt><a href="#id35"><span class="problematic" id="id36">|</span></a>–Atom_1</dt><dd><p>–Atom_2
+–K
+–r
+–Information</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt><a href="#id37"><span class="problematic" id="id38">|</span></a>–Angles</dt><dd><dl class="simple">
+<dt><a href="#id39"><span class="problematic" id="id40">|</span></a>–line index</dt><dd><dl class="simple">
+<dt><a href="#id41"><span class="problematic" id="id42">|</span></a>–Atom_1</dt><dd><p>–Atom_2
+–Atom_3
+–Data_1
+–Data_2
+–Info</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt><a href="#id43"><span class="problematic" id="id44">|</span></a>–Dihedrals</dt><dd><dl class="simple">
+<dt><a href="#id45"><span class="problematic" id="id46">|</span></a>–line index</dt><dd><dl class="simple">
+<dt><a href="#id47"><span class="problematic" id="id48">|</span></a>–Atom_1</dt><dd><p>–Atom_2
+–Atom_3
+–Atom_4
+–Data_1
+–Data_2
+–Info</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt><a href="#id49"><span class="problematic" id="id50">|</span></a>–Impropers</dt><dd><dl class="simple">
+<dt><a href="#id51"><span class="problematic" id="id52">|</span></a>–line index</dt><dd><dl class="simple">
+<dt><a href="#id53"><span class="problematic" id="id54">|</span></a>–Atom_1</dt><dd><p>–Atom_2
+–Atom_3
+–Atom_4
+–Data_1
+–Data_2
+–Info</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.reader.read_mol2">
+<span class="sig-prename descclassname"><span class="pre">pylift.reader.</span></span><span class="sig-name descname"><span class="pre">read_mol2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_json</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/pylift/reader.html#read_mol2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.reader.read_mol2" title="Link to this definition"></a></dt>
+<dd><p>Reads a MOL2 file and extracts the molecule, atom, bond, and substructure sections
+into separate dictionaries, which are then combined into one dictionary.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.reader.read_topo">
+<span class="sig-prename descclassname"><span class="pre">pylift.reader.</span></span><span class="sig-name descname"><span class="pre">read_topo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pseudoatoms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'topo.tmp.lmps'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linker_identifier</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'L'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_json</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/pylift/reader.html#read_topo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.reader.read_topo" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pylift.utilities">
+<span id="pylift-utilities-module"></span><h2>pylift.utilities module<a class="headerlink" href="#module-pylift.utilities" title="Link to this heading"></a></h2>
+<section id="id55">
+<h3>License<a class="headerlink" href="#id55" title="Link to this heading"></a></h3>
+<p>The MIT License (MIT)</p>
+<p>Copyright (c) 2024 Brandon C. Tapia</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.</p>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.utilities.cleanup_pylift">
+<span class="sig-prename descclassname"><span class="pre">pylift.utilities.</span></span><span class="sig-name descname"><span class="pre">cleanup_pylift</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user_files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">antechamber</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/pylift/utilities.html#cleanup_pylift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.utilities.cleanup_pylift" title="Link to this definition"></a></dt>
+<dd><p>Cleans up temporary files generated during program execution</p>
+<p>Parameters:
+user_files (list[str]): List of additional file paths to be removed. Default is None.
+temp (bool) : Removes all files with tmp in their name
+antechamber (bool) : Removes all extraneous files generated with Antechamber</p>
+<p>Returns:
+dict: information regarding the success/failure of deletion</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.utilities.read_json">
+<span class="sig-prename descclassname"><span class="pre">pylift.utilities.</span></span><span class="sig-name descname"><span class="pre">read_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_json</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/pylift/utilities.html#read_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.utilities.read_json" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.utilities.write_json">
+<span class="sig-prename descclassname"><span class="pre">pylift.utilities.</span></span><span class="sig-name descname"><span class="pre">write_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict_loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_json</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pylift/utilities.html#write_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.utilities.write_json" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pylift.vmd">
+<span id="pylift-vmd-module"></span><h2>pylift.vmd module<a class="headerlink" href="#module-pylift.vmd" title="Link to this heading"></a></h2>
+<section id="id56">
+<h3>License<a class="headerlink" href="#id56" title="Link to this heading"></a></h3>
+<p>The MIT License (MIT)</p>
+<p>Copyright (c) 2024 Brandon C. Tapia</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.</p>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.vmd.run_vmd_commands">
+<span class="sig-prename descclassname"><span class="pre">pylift.vmd.</span></span><span class="sig-name descname"><span class="pre">run_vmd_commands</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">commands</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/pylift/vmd.html#run_vmd_commands"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.vmd.run_vmd_commands" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.vmd.test_vmd_exec">
+<span class="sig-prename descclassname"><span class="pre">pylift.vmd.</span></span><span class="sig-name descname"><span class="pre">test_vmd_exec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylift/vmd.html#test_vmd_exec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.vmd.test_vmd_exec" title="Link to this definition"></a></dt>
+<dd><p>Tests if VMD executable can be found and run from the environment variable.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.vmd.topo_write">
+<span class="sig-prename descclassname"><span class="pre">pylift.vmd.</span></span><span class="sig-name descname"><span class="pre">topo_write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lammps_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impropers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pylift/vmd.html#topo_write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.vmd.topo_write" title="Link to this definition"></a></dt>
+<dd><p>pysimm.vmd.writelammpsdata</p>
+</dd></dl>
+
+</section>
+<section id="module-pylift.writer">
+<span id="pylift-writer-module"></span><h2>pylift.writer module<a class="headerlink" href="#module-pylift.writer" title="Link to this heading"></a></h2>
+<section id="id57">
+<h3>License<a class="headerlink" href="#id57" title="Link to this heading"></a></h3>
+<p>The MIT License (MIT)</p>
+<p>Copyright (c) 2024 Brandon C. Tapia</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.</p>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.writer.write_lammps">
+<span class="sig-prename descclassname"><span class="pre">pylift.writer.</span></span><span class="sig-name descname"><span class="pre">write_lammps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lammps_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lammps_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylift/writer.html#write_lammps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.writer.write_lammps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.writer.write_mol2">
+<span class="sig-prename descclassname"><span class="pre">pylift.writer.</span></span><span class="sig-name descname"><span class="pre">write_mol2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol2_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pylift/writer.html#write_mol2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.writer.write_mol2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pylift">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pylift" title="Link to this heading"></a></h2>
+<section id="id58">
+<h3>License<a class="headerlink" href="#id58" title="Link to this heading"></a></h3>
+<p>The MIT License (MIT)</p>
+<p>Copyright (c) 2024 Brandon C. Tapia</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.</p>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.pylift_help">
+<span class="sig-prename descclassname"><span class="pre">pylift.</span></span><span class="sig-name descname"><span class="pre">pylift_help</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylift.html#pylift_help"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.pylift_help" title="Link to this definition"></a></dt>
+<dd><p>Prints location of resources</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pylift.pylift_license">
+<span class="sig-prename descclassname"><span class="pre">pylift.</span></span><span class="sig-name descname"><span class="pre">pylift_license</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylift.html#pylift_license"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylift.pylift_license" title="Link to this definition"></a></dt>
+<dd><p>Prints the MIT License</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="PyLIFT documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Brandon C. Tapia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

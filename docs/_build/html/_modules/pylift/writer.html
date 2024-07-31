@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pylift.writer &mdash; PyLIFT 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PyLIFT
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../pylift.html">pylift package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PyLIFT</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../pylift.html">pylift</a></li>
+      <li class="breadcrumb-item active">pylift.writer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pylift.writer</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">******************************************************************************</span>
+<span class="sd">pylift.writer module</span>
+<span class="sd">*******************************************************************************</span>
+
+<span class="sd">*******************************************************************************</span>
+<span class="sd">License</span>
+<span class="sd">*******************************************************************************</span>
+<span class="sd">The MIT License (MIT)</span>
+
+<span class="sd">Copyright (c) 2024 Brandon C. Tapia</span>
+
+<span class="sd">Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="sd">of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="sd">in the Software without restriction, including without limitation the rights</span>
+<span class="sd">to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="sd">copies of the Software, and to permit persons to whom the Software is</span>
+<span class="sd">furnished to do so, subject to the following conditions:</span>
+
+<span class="sd">The above copyright notice and this permission notice shall be included in</span>
+<span class="sd">all copies or substantial portions of the Software.</span>
+
+<span class="sd">THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="sd">IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="sd">FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="sd">AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="sd">LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="sd">OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
+<span class="sd">THE SOFTWARE.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">fnmatch</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">importlib</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+
+<div class="viewcode-block" id="write_mol2">
+<a class="viewcode-back" href="../../pylift.html#pylift.writer.write_mol2">[docs]</a>
+<span class="k">def</span> <span class="nf">write_mol2</span><span class="p">(</span><span class="n">mol2_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">output_file</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">atom_dict</span> <span class="o">=</span> <span class="n">mol2_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atom_dict&#39;</span><span class="p">)</span>
+    <span class="n">bond_dict</span> <span class="o">=</span> <span class="n">mol2_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;bond_dict&#39;</span><span class="p">)</span>
+    <span class="n">auxinfo_dict</span> <span class="o">=</span> <span class="n">mol2_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;auxinfo_dict&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">atom_dict</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">bond_dict</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">auxinfo_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">atom_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Missing atom information&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bond_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Missing bond information&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">auxinfo_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Missing header or footer information&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;write_mol2_md_builder is specifically for use </span><span class="se">\</span>
+<span class="s1">              with pysimm.apps.md_builder.read_mol2_md_builder&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;for the system mol2 read and write please use </span><span class="se">\</span>
+<span class="s1">              readmol2 and writemol2 from the pysimm.system module&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;exiting...&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf=8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">molecule_init</span> <span class="o">=</span> <span class="n">auxinfo_dict</span><span class="p">[</span><span class="s1">&#39;header_info&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;molecule_init&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">auxinfo_dict</span><span class="p">[</span><span class="s1">&#39;molecule_info&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;res&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">atom_num</span> <span class="o">=</span> <span class="n">auxinfo_dict</span><span class="p">[</span><span class="s1">&#39;molecule_info&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atom_num&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>
+        <span class="n">bond_num</span> <span class="o">=</span> <span class="n">auxinfo_dict</span><span class="p">[</span><span class="s1">&#39;molecule_info&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;bond_num&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>
+        <span class="n">ident_1</span> <span class="o">=</span> <span class="n">auxinfo_dict</span><span class="p">[</span><span class="s1">&#39;molecule_info&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ident_1&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">ident_2</span> <span class="o">=</span> <span class="n">auxinfo_dict</span><span class="p">[</span><span class="s1">&#39;molecule_info&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ident_2&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">mol_type</span> <span class="o">=</span> <span class="n">auxinfo_dict</span><span class="p">[</span><span class="s1">&#39;molecule_info&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mol_type&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">charge_method</span> <span class="o">=</span> <span class="n">auxinfo_dict</span><span class="p">[</span><span class="s1">&#39;molecule_info&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;charge_method&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">molecule_init</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">res</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">atom_num</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">bond_num</span><span class="p">)</span><span class="si">:</span><span class="s2">4</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">ident_1</span><span class="p">)</span><span class="si">:</span><span class="s2">4</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">ident_2</span><span class="p">)</span><span class="si">:</span><span class="s2">4</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mol_type</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">charge_method</span><span class="si">}</span><span class="s2"> </span><span class="se">\n\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">auxinfo_dict</span><span class="p">[</span><span class="s1">&#39;header_info&#39;</span><span class="p">][</span><span class="s1">&#39;atom_init&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">atom_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;atom_name&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> </span><span class="se">\</span>
+<span class="s1">                        </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">2</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">2</span><span class="si">}</span><span class="s1"> </span><span class="se">\</span>
+<span class="s1">                        </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">2</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;atom_type&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">2</span><span class="si">}</span><span class="s1"> </span><span class="se">\</span>
+<span class="s1">                        </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;molecule_num&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">2</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;res&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">2</span><span class="si">}</span><span class="s1"> </span><span class="se">\</span>
+<span class="s1">                        </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;charge&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">2</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">auxinfo_dict</span><span class="p">[</span><span class="s1">&#39;header_info&#39;</span><span class="p">][</span><span class="s1">&#39;bond_init&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">bond_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;atom_1&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;atom_2&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">2</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;bond_type&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">2</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">auxinfo_dict</span><span class="p">[</span><span class="s1">&#39;header_info&#39;</span><span class="p">][</span><span class="s1">&#39;substructure_init&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">auxinfo_dict</span><span class="p">[</span><span class="s1">&#39;substructure_info&#39;</span><span class="p">][</span><span class="s1">&#39;substructure&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="write_lammps">
+<a class="viewcode-back" href="../../pylift.html#pylift.writer.write_lammps">[docs]</a>
+<span class="k">def</span> <span class="nf">write_lammps</span><span class="p">(</span><span class="n">lammps_dict</span><span class="p">,</span> <span class="n">lammps_out</span><span class="p">,</span> <span class="n">comment_style</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">lammps_dict_user_form</span> <span class="o">=</span> <span class="n">lammps_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lammps_dict&#39;</span><span class="p">)</span>
+    <span class="n">lammps_dict_ff_form</span> <span class="o">=</span> <span class="n">lammps_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lammps_dict_ff_form&#39;</span><span class="p">)</span>
+    <span class="n">header_dict</span> <span class="o">=</span> <span class="n">lammps_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;header&#39;</span><span class="p">)</span>
+    <span class="n">footer_dict</span> <span class="o">=</span> <span class="n">lammps_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;footer&#39;</span><span class="p">)</span>
+
+
+    <span class="n">pair_dict</span> <span class="o">=</span> <span class="n">lammps_dict_ff_form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;pair_dict&#39;</span><span class="p">)</span>
+    <span class="n">bond_dict</span> <span class="o">=</span> <span class="n">lammps_dict_ff_form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;bond_dict&#39;</span><span class="p">)</span>
+    <span class="n">angle_dict</span> <span class="o">=</span> <span class="n">lammps_dict_ff_form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;angle_dict&#39;</span><span class="p">)</span>
+    <span class="n">dihedral_dict</span> <span class="o">=</span> <span class="n">lammps_dict_ff_form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dihedral_dict&#39;</span><span class="p">)</span>
+    <span class="n">improper_dict</span> <span class="o">=</span> <span class="n">lammps_dict_ff_form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;improper_dict&#39;</span><span class="p">)</span>
+
+    <span class="n">pair_dict_user</span> <span class="o">=</span> <span class="n">lammps_dict_user_form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;pair_dict&#39;</span><span class="p">)</span>
+    <span class="n">bond_dict_user</span> <span class="o">=</span> <span class="n">lammps_dict_user_form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;bond_dict&#39;</span><span class="p">)</span>
+    <span class="n">angle_dict_user</span> <span class="o">=</span> <span class="n">lammps_dict_user_form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;angle_dict&#39;</span><span class="p">)</span>
+    <span class="n">dihedral_dict_user</span> <span class="o">=</span> <span class="n">lammps_dict_user_form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dihedral_dict&#39;</span><span class="p">)</span>
+    <span class="n">improper_dict_user</span> <span class="o">=</span> <span class="n">lammps_dict_user_form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;improper_dict&#39;</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">lammps_out</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">header_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">pair_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">comment_style</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="n">pair_dict_user</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atom&#39;</span><span class="p">)</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> Bond Coeffs&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">bond_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">K</span> <span class="o">=</span> <span class="n">bond_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;K&#39;</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">bond_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">K</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">r</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">comment_style</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">a_1</span> <span class="o">=</span> <span class="n">bond_dict_user</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atom_1&#39;</span><span class="p">)</span>
+                <span class="n">a_2</span> <span class="o">=</span> <span class="n">bond_dict_user</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atom_2&#39;</span><span class="p">)</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">a_1</span><span class="si">}{</span><span class="n">comment_style</span><span class="si">}{</span><span class="n">a_2</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> Angle Coeffs&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">angle_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">K</span> <span class="o">=</span> <span class="n">angle_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;K&#39;</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">angle_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">K</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">r</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">comment_style</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">a_1</span> <span class="o">=</span> <span class="n">angle_dict_user</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atom_1&#39;</span><span class="p">)</span>
+                <span class="n">a_3</span> <span class="o">=</span> <span class="n">angle_dict_user</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atom_2&#39;</span><span class="p">)</span>
+                <span class="n">a_3</span> <span class="o">=</span> <span class="n">angle_dict_user</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atom_3&#39;</span><span class="p">)</span>
+                <span class="n">a_4</span> <span class="o">=</span> <span class="n">angle_dict_user</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atom_4&#39;</span><span class="p">)</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">a_1</span><span class="si">}{</span><span class="n">comment_style</span><span class="si">}{</span><span class="n">a_2</span><span class="si">}{</span><span class="n">comment_style</span><span class="si">}{</span><span class="n">a_3</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> Dihedral Coeffs&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">dihedral_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">dihedral_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;m&#39;</span><span class="p">)</span>
+            <span class="n">K</span> <span class="o">=</span> <span class="n">dihedral_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;K&#39;</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">dihedral_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;n&#39;</span><span class="p">)</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">dihedral_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">K</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">comment_style</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">a_1</span> <span class="o">=</span> <span class="n">dihedral_dict_user</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atom_1&#39;</span><span class="p">)</span>
+                <span class="n">a_2</span> <span class="o">=</span> <span class="n">dihedral_dict_user</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atom_2&#39;</span><span class="p">)</span>
+                <span class="n">a_3</span> <span class="o">=</span> <span class="n">dihedral_dict_user</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atom_3&#39;</span><span class="p">)</span>
+                <span class="n">a_4</span> <span class="o">=</span> <span class="n">dihedral_dict_user</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atom_4&#39;</span><span class="p">)</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">a_1</span><span class="si">}{</span><span class="n">comment_style</span><span class="si">}{</span><span class="n">a_2</span><span class="si">}{</span><span class="n">comment_style</span><span class="si">}{</span><span class="n">a_3</span><span class="si">}{</span><span class="n">comment_style</span><span class="si">}{</span><span class="n">a_4</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> Improper Coeffs&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">improper_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">K</span> <span class="o">=</span> <span class="n">dihedral_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;K&#39;</span><span class="p">)</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">dihedral_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">dihedral_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;n&#39;</span><span class="p">)</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">K</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">comment_style</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">a_1</span> <span class="o">=</span> <span class="n">improper_dict_user</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atom_1&#39;</span><span class="p">)</span>
+                <span class="n">a_2</span> <span class="o">=</span> <span class="n">improper_dict_user</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atom_2&#39;</span><span class="p">)</span>
+                <span class="n">a_3</span> <span class="o">=</span> <span class="n">improper_dict_user</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atom_3&#39;</span><span class="p">)</span>
+                <span class="n">a_4</span> <span class="o">=</span> <span class="n">improper_dict_user</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atom_4&#39;</span><span class="p">)</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">a_1</span><span class="si">}{</span><span class="n">comment_style</span><span class="si">}{</span><span class="n">a_2</span><span class="si">}{</span><span class="n">comment_style</span><span class="si">}{</span><span class="n">a_3</span><span class="si">}{</span><span class="n">comment_style</span><span class="si">}{</span><span class="n">a_4</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">footer_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Brandon C. Tapia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
