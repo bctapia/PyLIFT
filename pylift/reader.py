@@ -1,12 +1,7 @@
 '''
-******************************************************************************
 pylift.reader module
-*******************************************************************************
 
-*******************************************************************************
-License
-*******************************************************************************
-The MIT License (MIT)
+License: The MIT License (MIT)
 
 Copyright (c) 2024 Brandon C. Tapia
 
@@ -51,6 +46,9 @@ def read_mol2(input_file: str,
     atom_section = False
     bond_section = False
     substructure_section = False
+    
+    remaining_atoms = False
+    remaining_end = False
 
     atom_dict = {}
     bond_dict = {}
@@ -58,7 +56,7 @@ def read_mol2(input_file: str,
 
     molecule_iter = 0
 
-    res = None,
+    res = None
     atom_num = None
     bond_num = None
     ident_1 = None
@@ -166,11 +164,15 @@ def read_mol2(input_file: str,
         'bond_dict': bond_dict
     }
 
+    overall_charge = sum(float(atom_info['charge']) for atom_info in atom_dict.values())
+    mol2_dict['auxinfo_dict']['molecule_info'].update({'total_charge': overall_charge})
+
     if out_json:
         with open(out_json, 'w', encoding='utf-8') as file:
             json.dump(mol2_dict, file, indent=4)
         print(f'printed .json file ({out_json}) containing information from {input_file}')
 
+    print(f'[read_mol2] read {input_file}')
     return mol2_dict
 
 def read_topo(pseudoatoms: str,
@@ -191,12 +193,19 @@ def read_topo(pseudoatoms: str,
     angle_section = False
     dihedral_section = False
     improper_section = False
+    mass_section = False
+    atom_section = False
+    
+    remaining = False
+    atom_remaining = False
 
     header_section = True
 
+    mass_dict = {}
     pair_dict = {}
     bond_dict = {}
     angle_dict = {}
+    atom_dict = {}
     dihedral_dict = {}
     improper_dict = {}
 
@@ -219,9 +228,46 @@ def read_topo(pseudoatoms: str,
             dihedral_section = False
             improper_section = False
             header_section = False
+            mass_section = True
+            atom_section = False
+        
+        elif columns[0] == 'Atoms':
+            pair_section = False
+            bond_section = False
+            angle_section = False
+            dihedral_section = False
+            improper_section = False
+            header_section = False
+            mass_section = False
+            atom_section = True
+        
+        elif columns[0] == 'Bonds':
+            pair_section = False
+            bond_section = False
+            angle_section = False
+            dihedral_section = False
+            improper_section = False
+            header_section = False
+            mass_section = False
+            atom_section = False
+        
+        elif mass_section:
+            mass_dict[columns[0]] = {
+                    'atom': columns[3],
+                    'mass': columns[1]
+                }
+        
+        elif atom_section:
+            atom_dict[columns[0]] = {'molecule': int(columns[1]),
+                                     'atom_type': int(columns[2]),
+                                     'charge': float(columns[3]),
+                                     'x': float(columns[4]),
+                                     'y': float(columns[5]),
+                                     'z': float(columns[6]),
+                                     'comment': columns[8]
+            }
 
         elif len(columns) > 1:
-
             if columns[1] == 'Pair':
                 pair_section = True
                 bond_section = False
@@ -291,18 +337,49 @@ def read_topo(pseudoatoms: str,
                     'atom_4': columns[5]
                 }
 
-        if not any([pair_section, bond_section, angle_section, dihedral_section, improper_section]):
+        if atom_dict and any('x' in atom for atom in atom_dict.values()):
+            max_x = max(atom['x'] for atom in atom_dict.values())
+            min_x = min(atom['x'] for atom in atom_dict.values())
+            max_y = max(atom['x'] for atom in atom_dict.values())
+            min_y = min(atom['x'] for atom in atom_dict.values())
+            max_z = max(atom['x'] for atom in atom_dict.values())
+            min_z = min(atom['x'] for atom in atom_dict.values())
+            print(f"The maximum value of x is: {max_x}")
+        else:
+            print("atom_dict is empty or contains no 'x' values.")
+        #print(atom_dict)
+        #max_x = max(atom['x'] for atom in atom_dict.values())
+        #min_x = min(atom['x'] for atom in atom_dict.values())
+        #max_y = max(atom['y'] for atom in atom_dict.values())
+        #min_y = min(atom['y'] for atom in atom_dict.values())
+        #max_z = max(atom['z'] for atom in atom_dict.values())
+        #min_z = min(atom['z'] for atom in atom_dict.values())
+
+
+        if not any([pair_section, bond_section, angle_section, dihedral_section, improper_section, mass_section, atom_section]):
+            line_strip = line.strip()
+            line_split = line_strip.split()
             if header_section:
-                header[i] = {'info': line}
+                try:
+                    float(line_split[0])
+                    if float(line_split[0]) > 0:
+                        header[i] = {'info': line}
+                    else:
+                        header[i] = {line_split[2]: line_split[0],
+                                 line_split[3]: line_split[1]}
+                except ValueError:
+                    header[i] = {'info': line}    
             else:
                 footer[i] = {'info': line}
 
     lammps_dict = {
+        'mass_dict': mass_dict,
         'pair_dict': pair_dict,
         'bond_dict': bond_dict,
         'angle_dict': angle_dict,
         'dihedral_dict': dihedral_dict,
-        'improper_dict': improper_dict
+        'improper_dict': improper_dict,
+        'atom_dict': atom_dict
     }
 
     if pseudoatoms:
@@ -336,7 +413,7 @@ def read_topo(pseudoatoms: str,
                 for sub_key, sub_value in value.items():
                     if isinstance(value, dict):
                         for item_key, item_value in sub_value.items():
-                            if item_value.startswith(str(linker_identifier)):
+                            if str(item_value).startswith(str(linker_identifier)):
                                 lammps_dict_full['lammps_dict_ff_form'][key][sub_key][item_key] = \
                                 item_value[1:]
 
@@ -344,6 +421,8 @@ def read_topo(pseudoatoms: str,
         with open(out_json, 'w', encoding='utf-8') as file:
             json.dump(lammps_dict_full, file, indent=4)
         print(f'printed .json file ({out_json}) containing information from {input_file}')
+
+    print(f'[read_topo] read {input_file}')
 
     return lammps_dict_full
 
@@ -355,57 +434,69 @@ def read_gaff2(gaff2_source: str,
         Format of returned gaff2_dict:
     gaff2_dict
         |--Information
-                |--Header
-                 --Forcefield
-                 --Version
-                 --Date
-                 --Pair_Type
-                 --Bond_Type
-                 --Angle_Type
-                 --Dihedral_Type
-                 --Improper_Type
+                |--Header \n
+                 --Forcefield \n
+                 --Version \n
+                 --Date \n
+                 --Pair_Type \n
+                 --Bond_Type \n
+                 --Angle_Type \n
+                 --Dihedral_Type \n
+                 --Improper_Type \n
         |--Atoms
             |--line index
-                |--Atom
-                 --Mass
-                 --Unknown Param
-                 --Information
+                |--Atom \n
+                 --Mass \n
+                 --Unknown Param (not used) \n
+                 --Information \n
+        |--Pairs
+            |--line index
+                |--Pair \n
+                 --r_Pair \n
+                 --Atom \n
+                 --sigma \n
+                 --eps \n
         |--Bonds
             |--line index
-                |--Atom_1
-                 --Atom_2
-                 --K
-                 --r
-                 --Information
+                |--Bond \n
+                 --r_Bond \n
+                 --Atom_1 \n
+                 --Atom_2 \n
+                 --K \n
+                 --r \n
+                 --Information \n
         |--Angles
             |--line index
-                |--Atom_1
-                 --Atom_2
-                 --Atom_3
-                 --Data_1
-                 --Data_2
-                 --Info
+                |--Angle \n
+                 -- r_Angle \n
+                 --Atom_1 \n
+                 --Atom_2 \n
+                 --Atom_3 \n
+                 --Data_1 \n
+                 --Data_2 \n
+                 --Info \n
         |--Dihedrals
             |--line index
-                |--Atom_1
-                 --Atom_2
-                 --Atom_3
-                 --Atom_4
-                 --Data_1
-                 --Data_2
-                 --Info
+                |--Atom_1 \n
+                 --Atom_2 \n
+                 --Atom_3 \n
+                 --Atom_4 \n
+                 --Data_1 \n
+                 --Data_2 \n
+                 --Info \n
         |--Impropers
             |--line index
-                |--Atom_1
-                 --Atom_2
-                 --Atom_3
-                 --Atom_4
-                 --Data_1
-                 --Data_2
-                 --Info
+                |--Atom_1 \n
+                 --Atom_2 \n
+                 --Atom_3 \n
+                 --Atom_4 \n
+                 --Data_1 \n
+                 --Data_2 \n
+                 --Info \n
     '''
     gaff2 = {}
     Information = []
+    Pairs = {}
     Atoms = {}
     Bonds = {}
     Angles = {}
@@ -418,6 +509,7 @@ def read_gaff2(gaff2_source: str,
 
     section_counter = 1
 
+    # regex identifiers for these sections because of the wildcard X containing a space before it
     bond_pattern = re.compile(r'([a-zA-Z0-9+]+)\s*[-]\s*([a-zA-Z0-9+]+)\s*(.*)')
     angle_pattern = re.compile(r'([a-zA-Z0-9+]+)\s*[- ]\s*([a-zA-Z0-9+]+)\s*[- ]\s*([a-zA-Z0-9+]+)\s*(.*)')
     dihedral_pattern = re.compile(r'([a-zA-Z0-9+]+)\s*[- ]\s*([a-zA-Z0-9+]+)\s*[- ]\s*([a-zA-Z0-9+]+)\s*[- ]\s*([a-zA-Z0-9+]+)\s*(.*)')
@@ -430,16 +522,18 @@ def read_gaff2(gaff2_source: str,
         line = line.strip()
         columns = line.split()
 
+        # iterating through each section recognizing that each section has a line break between them
+        # if we find that these breaks change between versions, we can switch to a keyword search
         if len(columns) == 0:
             section_counter += 1
             continue
 
         if i == 0:  # header info
             Information = {'Header': line,
-                           'Forcefield': 'Gaff2',
+                           'Forcefield': 'gaff2',
                            'Version': columns[columns.index('(Version')+1],
                            'Date': ' '.join(map(str, columns[columns.index('(Version')+2:])),
-                           'Pair_Type': 'TBD',
+                           'Pair_Type': 'lj/charmmfsw/coul/long', # this is meant to replace lj/charmm/coul/long which could also be used if desired
                            'Bond_Type': 'Harmonic',
                            'Angle_Type': 'Harmonic',
                            'Dihedral_Type': 'Fourier',
@@ -448,7 +542,7 @@ def read_gaff2(gaff2_source: str,
         if section_counter == 1 and i != 0 :  # atom info
             Atoms[int(i+1)] = {'Atom': columns[0],
                              'Mass': float(columns[1]),
-                             'Unknown Param': float(columns[2]),
+                             'Unknown Param': float(columns[2]), # unsure what this parameter is -> have not found a use for it
                              'Information': ' '.join(map(str, columns[3:]))}
 
         elif section_counter == 2:  # bond info
@@ -491,13 +585,15 @@ def read_gaff2(gaff2_source: str,
         elif section_counter == 4:  # dihedral info
             match = dihedral_pattern.match(line)
             if match:
-                dihedral_data = match.group(5).split() # NEED TO UPDATE INFO
+                dihedral_data = match.group(5).split() 
+                # The method we have employed to convert Amber style dihedrals into LAMMPS is through the Fourier style
+                # m (the number of summations is  always 1)
+                # the first two parameters in  gaff2.dat correspond to K=param_1/param_2
                 K = float(dihedral_data[1])/float(dihedral_data[0])
                 Atom_1 = match.group(1)
                 Atom_2 = match.group(2)
                 Atom_3 = match.group(3)
                 Atom_4 = match.group(4)
-
                 Dihedrals[int(i+1)] = {'Dihedral': Atom_1+'-'+Atom_2+'-'+Atom_3+'-'+Atom_4,
                                   'r_Dihedral': Atom_4+'-'+Atom_3+'-'+Atom_2+'-'+Atom_1,
                                 'Atom_1': Atom_1,
@@ -516,7 +612,10 @@ def read_gaff2(gaff2_source: str,
 
             match = improper_pattern.match(line)
             if match:
-                improper_data = match.group(5).split() # NEED TO UPDATE INFO
+                improper_data = match.group(5).split()
+                # The method we have employed to convert Amber style impropers into LAMMPS is through the cvff style
+                # Amber provides the d-angle as either 0 or 180 which we must convert into cvff_style via 
+                # where d = cos(d-angle) (e.g., -1 for 180 degrees and 1 for 0 degrees)
                 if float(improper_data[1]) == float(180.0):
                     d = int(-1)
                 elif float(improper_data[1]) == float(0):
@@ -540,8 +639,32 @@ def read_gaff2(gaff2_source: str,
                                  'n': int(float(improper_data[2])),
                                  'd': d,
                                  'Information': ' '.join(map(str, dihedral_data[3:]))}
+            else:
+                print(f'Matching problem with {line}')
+             
+        elif section_counter == 8: # pair info
+        
+            if len(columns) > 2:
+                # To convert Amber style pairs into LAMMPS, the sigma definition must be adjusted
+                # Amber defined Lennard-Jones potentials as U(r) = eps*((sigma/r)^12-2*(sigma/r)^6)
+                # while LAMMPS defines them as 4*eps*((sigma/r)^12-(sigma/r)^6
+                # Amber also provides the radius instead of the diameter for sigma
+                # To address these two issues we must multiple the Amber value by 2*2**(-1/6)
+                # Credit for this descovery goes to Andrew Jewett of MolTemplate
+                # https://github.com/jewettaij/moltemplate/blob/master/moltemplate/amber2lt.py
+                Atom_1= columns[0]
+                Atom_2 = columns[0]
+                sigma = float(columns[1])*2*2**(-1/6)
+                Pairs[int(i+1)] = {'Pair': Atom_1+'-'+Atom_2,
+                                   'r_Pair': Atom_2+'-'+Atom_1,
+                                   'Atom_1': Atom_1,
+                                   'Atom_2': Atom_2,
+                                   'eps': float(columns[2]),
+                                   'sigma': sigma}
+                
     gaff2 = {'Information': Information,
              'Atoms': Atoms,
+             'Pairs': Pairs,
              'Bonds': Bonds,
              'Angles': Angles,
              'Dihedrals': Dihedrals,
@@ -627,6 +750,11 @@ def read_frcmod(frcmod_file: str,
     improper_section = False
     nonbon_section = False
 
+    mass_check = False
+    bond_check = False
+    angle_check = False
+    nonbon_check = False
+
     mass_dict = {}
     bond_dict = {}
     angle_dict = {}
@@ -703,22 +831,28 @@ def read_frcmod(frcmod_file: str,
             if not line:
                 continue
             mass_dict = {'message': 'NOT YET IMPLEMENTED'}
-            print('mass calculations not yet supported')
-            print('please send frcmod file to bctapia@mit.edu to update this!')
+            if mass_check is False:
+                print('mass calculations not yet supported')
+                print('please send frcmod file to bctapia@mit.edu to update this!')
+                mass_check = True
 
         elif bond_section:
             if not line:
                 continue
             bond_dict = {'message': 'NOT YET IMPLEMENTED'}
-            print('bond calculations not yet supported')
-            print('please send frcmod file to bctapia@mit.edu to update this!')
+            if bond_check is False:
+                print('bond calculations not yet supported')
+                print('please send frcmod file to bctapia@mit.edu to update this!')
+                bond_check = True
 
         elif angle_section:
             if not line:
                 continue
             angle_dict = {'message': 'NOT YET IMPLEMENTED'}
-            print('angle calculations not yet supported')
-            print('please send frcmod file to bctapia@mit.edu to update this!')
+            if angle_check is False:
+                print('angle calculations not yet supported')
+                print('please send frcmod file to bctapia@mit.edu to update this!')
+                angle_check = True
 
         elif dihedral_section:
             if not line:
@@ -819,14 +953,16 @@ def read_frcmod(frcmod_file: str,
                     })
 
             else:
-                print(f'Matching problem with {line}')
+                print(f'Matching problem with dihedral line: {line}')
 
         elif nonbon_section:
             if not line:
                 continue
             nonbon_dict = {'NOT YET IMPLEMENTED'}
-            print('nonbond calculations not yet supported')
-            print('please send frcmod file to bctapia@mit.edu to update this!')
+            if nonbon_check is False:
+                print('nonbond calculations not yet supported')
+                print('please send frcmod file to bctapia@mit.edu to update this!')
+                nonbon_check = True
 
     frcmod_dict = {'mass_dict': mass_dict,
                    'bond_dict': bond_dict,
@@ -840,6 +976,7 @@ def read_frcmod(frcmod_file: str,
             json.dump(frcmod_dict, file, indent=4)
         print(f'printed .json file ({out_json}) containing information from {frcmod_file}')
 
+    print('[read_frcmod] completed')
     return frcmod_dict
 
 

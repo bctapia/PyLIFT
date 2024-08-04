@@ -1,12 +1,7 @@
 '''
-******************************************************************************
 pylift.utilities module
-*******************************************************************************
 
-*******************************************************************************
-License
-*******************************************************************************
-The MIT License (MIT)
+License: The MIT License (MIT)
 
 Copyright (c) 2024 Brandon C. Tapia
 
@@ -32,6 +27,18 @@ THE SOFTWARE.
 import fnmatch
 import os
 import json
+import importlib
+import importlib.resources as pkg_resources
+
+optional_modules = ['rdkit', 'openbabel', 'pymol']
+imported_modules = {}
+
+for module in optional_modules:
+    try:
+        imported_modules[module] = importlib.import_module(module)
+    except ImportError:
+        imported_modules[module] = None
+
 
 def cleanup_pylift(user_files: list[str] = None,
                        temp: bool = True,
@@ -78,13 +85,16 @@ def cleanup_pylift(user_files: list[str] = None,
 
     return result
 
-def read_json(in_json: str) -> dict:
+def read_json(in_json):
     '''
     '''
-    with open(in_json, 'r', encoding='utf-8') as file:
-        dict_file = json.load(file)
+    with pkg_resources.path('pylift.ff_data', in_json) as file_path:
+        with open(file_path, encoding='utf-8') as file:
+            dict_file = json.load(file)
 
-    return dict_file
+            print(f"[read_json] read {in_json}")
+            return dict_file
+
 
 def write_json(dict_loc: dict,
                out_json: str) -> None:

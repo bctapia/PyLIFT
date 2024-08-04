@@ -1,12 +1,7 @@
 '''
-******************************************************************************
 pylift.vmd module
-*******************************************************************************
 
-*******************************************************************************
-License
-*******************************************************************************
-The MIT License (MIT)
+License: The MIT License (MIT)
 
 Copyright (c) 2024 Brandon C. Tapia
 
@@ -38,19 +33,22 @@ VMD_EXEC = os.environ.get('VMD_EXEC')
 def test_vmd_exec():
     '''
     Tests if VMD executable can be found and run from the environment variable.
+
+    Returns:
+        bool for success/fail
     '''
     if not VMD_EXEC:
         print('''
 =========================VMD TEST RESULT=========================
 VMD_EXEC environment variable not set. 
 Please add the location of VMD to your environment variables by running the following in your terminal:
-    echo "export VMD_EXEC='PATH/TO/YOUR/VMD_EXEC'" >> ~/.bashrc
+    echo "export VMD_EXEC=PATH/TO/YOUR/VMD_EXEC" >> ~/.bashrc
     source ~/.bashrc
 If you don't know where VMD is, try running:
     whereis vmd
 =========================VMD TEST RESULT=========================
         ''')
-        return
+        return False
 
     try:
         _, stderr, returncode = run_vmd_commands(commands = None, verbose = False)
@@ -59,10 +57,13 @@ If you don't know where VMD is, try running:
             print('=========================VMD TEST RESULT=========================')
             print(f'VMD successfully found at {VMD_EXEC}')
             print('=========================VMD TEST RESULT=========================')
+            return True
+        
         else:
             print('=========================VMD TEST RESULT=========================')
             print(f"VMD found but exited with an error code: {returncode}\n{stderr}")
             print('=========================VMD TEST RESULT=========================')
+            return False
 
     except FileNotFoundError:
         print(f'''
@@ -70,14 +71,16 @@ If you don't know where VMD is, try running:
 FileNotFoundError: VMD executable not found at {VMD_EXEC}.
 Please ensure the path is correct and the program exists.
 You can add the location of VMD to your environment variables by running the following in your terminal:
-    echo "export VMD_EXEC='PATH/TO/YOUR/VMD_EXEC'" >> ~/.bashrc
+    echo "export VMD_EXEC=PATH/TO/YOUR/VMD_EXEC" >> ~/.bashrc
     source ~/.bashrc
 If you don't know where VMD is, try running:
     whereis vmd
 =========================VMD TEST RESULT=========================
             ''')
+        return False
     except Exception as e:
         print(f'An error occurred while trying to execute VMD: {str(e)}')
+        return False
 
 def run_vmd_commands(commands: str,
                      verbose: Optional[bool] = True) -> tuple[str, str, int]:
@@ -94,10 +97,8 @@ def run_vmd_commands(commands: str,
         stdout, stderr = process.communicate(commands)
 
         if verbose:
-            print("Output:")
-            print(stdout)
-            print("Errors:")
-            print(stderr)
+            print(f"[vmd output]: {stdout}")
+            print(f"[vmd errors]: {stderr}")
 
         if process.returncode != 0:
             print(f"VMD exited with an error code: {process.returncode}")

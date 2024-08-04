@@ -1,12 +1,7 @@
 '''
-******************************************************************************
 pylift.writer module
-*******************************************************************************
 
-*******************************************************************************
-License
-*******************************************************************************
-The MIT License (MIT)
+License: The MIT License (MIT)
 
 Copyright (c) 2024 Brandon C. Tapia
 
@@ -76,11 +71,7 @@ def write_mol2(mol2_dict: dict, output_file: dict) -> None:
             f"{auxinfo_dict['header_info']['atom_init']}\n")
 
         for key, value in atom_dict.items():
-            file.write(f'{key} {value["atom_name"]} \
-                        {value["x"]:2} {value["y"]:2} \
-                        {value["z"]:2} {value["atom_type"]:2} \
-                        {value["molecule_num"]:2} {value["res"]:2} \
-                        {value["charge"]:2}\n')
+            file.write(f'{key} {value["atom_name"]} {value["x"]:2} {value["y"]:2} {value["z"]:2} {value["atom_type"]:2} {value["molecule_num"]:2} {value["res"]:2} {value["charge"]:2}\n')
 
         file.write(f"{auxinfo_dict['header_info']['bond_init']}\n")
 
@@ -89,6 +80,8 @@ def write_mol2(mol2_dict: dict, output_file: dict) -> None:
 
         file.write(f"{auxinfo_dict['header_info']['substructure_init']}\n")
         file.write(f"{auxinfo_dict['substructure_info']['substructure']}")
+
+        print(f"[write_mol2] wrote {output_file}")
 
         return None
 
@@ -100,13 +93,15 @@ def write_lammps(lammps_dict, lammps_out, comment_style=None):
     header_dict = lammps_dict.get('header')
     footer_dict = lammps_dict.get('footer')
 
-
+    mass_dict = lammps_dict_ff_form.get('mass_dict')
     pair_dict = lammps_dict_ff_form.get('pair_dict')
     bond_dict = lammps_dict_ff_form.get('bond_dict')
     angle_dict = lammps_dict_ff_form.get('angle_dict')
     dihedral_dict = lammps_dict_ff_form.get('dihedral_dict')
     improper_dict = lammps_dict_ff_form.get('improper_dict')
+    atom_dict = lammps_dict_ff_form.get('atom_dict')
 
+    mass_dict_user = lammps_dict_user_form.get('mass_dict')
     pair_dict_user = lammps_dict_user_form.get('pair_dict')
     bond_dict_user = lammps_dict_user_form.get('bond_dict')
     angle_dict_user = lammps_dict_user_form.get('angle_dict')
@@ -116,17 +111,34 @@ def write_lammps(lammps_dict, lammps_out, comment_style=None):
     with open(lammps_out, 'w', encoding='utf-8') as file:
 
         for key, value in header_dict.items():
-            file.write(f"{value}\n")
+            if value.get('xlo'):
+                file.write(f"{value['xlo']} {value['xhi']} xlo xhi\n")
+            elif value.get('ylo'):
+                file.write(f"{value['ylo']} {value['yhi']} ylo yhi\n")
+            elif value.get('zlo'):
+                file.write(f"{value['zlo']} {value['zhi']} zlo zhi\n")
+            else:
+                file.write(f"{value['info']}\n")
 
+        file.write("\nMasses\n")
+        for key, value in mass_dict.items():
+            file.write(f"{key} {value['mass']}")
+            if comment_style is not None:
+                a = mass_dict_user[key].get('atom')
+                file.write(f" # {a}\n")
+            else:
+                file.write('\n')        
+
+        file.write('\nPair Coeffs\n')
         for key, value in pair_dict.items():
-            file.write(f"{key}")
+            file.write(f"{key} {value['eps']} {value['sigma']}")
             if comment_style is not None:
                 a = pair_dict_user[key].get('atom')
                 file.write(f" # {a}\n")
             else:
                 file.write('\n')
 
-        file.write('\n Bond Coeffs')
+        file.write('\nBond Coeffs\n')
 
         for key, value in bond_dict.items():
             K = bond_dict[key].get('K')
@@ -139,7 +151,7 @@ def write_lammps(lammps_dict, lammps_out, comment_style=None):
             else:
                 file.write('\n')
 
-        file.write('\n Angle Coeffs')
+        file.write('\nAngle Coeffs\n')
 
         for key, value in angle_dict.items():
             K = angle_dict[key].get('K')
@@ -154,7 +166,7 @@ def write_lammps(lammps_dict, lammps_out, comment_style=None):
             else:
                 file.write('\n')
 
-        file.write('\n Dihedral Coeffs')
+        file.write('\nDihedral Coeffs\n')
 
         for key, value in dihedral_dict.items():
             m = dihedral_dict[key].get('m')
@@ -171,12 +183,12 @@ def write_lammps(lammps_dict, lammps_out, comment_style=None):
             else:
                 file.write('\n')
 
-        file.write('\n Improper Coeffs')
+        file.write('\nImproper Coeffs\n')
 
         for key, value in improper_dict.items():
-            K = dihedral_dict[key].get('K')
-            d = dihedral_dict[key].get('d')
-            n = dihedral_dict[key].get('n')
+            K = improper_dict[key].get('K')
+            d = improper_dict[key].get('d')
+            n = improper_dict[key].get('n')
             file.write(f"{key} {K} {d} {n}")
             if comment_style is not None:
                 a_1 = improper_dict_user[key].get('atom_1')
@@ -187,5 +199,21 @@ def write_lammps(lammps_dict, lammps_out, comment_style=None):
             else:
                 file.write('\n')
 
+        file.write('\nAtoms # full\n')
+
+        for key, value in atom_dict.items():
+            molecule = atom_dict[key].get('molecule')
+            atom_type = atom_dict[key].get('atom_type')
+            charge = atom_dict[key].get('charge')
+            x = atom_dict[key].get('x')
+            y = atom_dict[key].get('y')
+            z = atom_dict[key].get('z')
+            comment = atom_dict[key].get('comment')
+            file.write(f"{key} {molecule} {atom_type} {charge} {x} {y} {z} # {comment}\n")
+
         for key, value in footer_dict.items():
-            file.write(f"{value}\n")
+            if value['info'].split()[0].isdigit() is False:
+                file.write('\n')
+            file.write(f"{value['info']}\n")
+        
+    print(f"[write_lammps] wrote {lammps_out}")

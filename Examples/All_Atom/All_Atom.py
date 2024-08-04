@@ -1,25 +1,41 @@
-from pylift import vmd
-from pylift import reader
-from pylift import utilities
-from pylift import builder
-from pylift import writer
-
-#from pysimm import forcefield
-#from pysimm import system
-#from pysimm import amber
+from pylift import amber, reader, writer, vmd, utilities, builder
 
 def pipeline():
 
-    # forcefield to use
-    #ff = forcefield.Gaff2()
-    # mol2 output from quantum chemistry program (verified with Gaussian) or PyRed
-    #polymer_AA = system.read_mol2('CANAL-Me-Me2F_H.mol2')
+    amber.antechamber('PIM-1_monomer.mol2', 'PIM-1_monomer_Amber.mol2',
+                    forcefield = 'gaff2', charge_method = None,
+                    missing_search = 'parmchk2')
 
-    #amber.get_forcefield_types(polymer_AA, types='gaff2', f=ff, fo_type='mol2',
-                    #mol2_name='CANAL-Me-Me2F_H_gaff2.mol2') # finding the correct gaff2 file types
-    #amber.get_missing_ff_params(types='gaff2') # finding any missing forcefield parameters
+    molecule = reader.read_mol2('PIM-1_monomer_Amber.mol2')
 
-    molecule = reader.read_mol2(input_file='CANAL-Me-Me2F_H.mol2')
-    molecule = builder.remove_h(mol2_dict=molecule, h_identifiers=['h', 'H'], specific_atoms=[1, 37], num_delete=[1,1])
-    molecule = builder.types_to_names(mol2_dict=molecule)
-    molecule = builder.assign_linkers(linker_atoms=[1, 37], mol2_dict=molecule)
+    molecule = builder.remove_h(molecule,
+                                specific_atoms=[4,5,34,35],
+                                num_delete=[1,1,1,1],
+                                charge_distribution='uniform',
+                                h_identifiers = ['h','H'])
+
+    molecule = builder.assign_linkers(molecule,
+                                      linker_atoms=[4,34],
+                                      linker_identifier='L')
+
+    molecule = builder.types_to_names(molecule)
+
+    writer.write_mol2(molecule, 'PIM-1_forTopo.tmp.mol2')
+
+    vmd.topo_write('PIM-1_forTopo.tmp.mol2', 'PIM-1_fromTopo.tmp.mol2', 
+                    bonds=True, angles=True, dihedrals=True, impropers=True,
+                    verbose=True)
+
+    molecule = reader.read_topo(pseudoatoms = False,
+                                input_file = 'PIM-1_fromTopo.tmp.mol2')
+
+    gaff2 = utilities.read_json('gaff2.json')
+
+    missing_params = reader.read_frcmod('missing_ff_params.frcmod')
+
+    molecule = builder.add_ff_params(molecule, gaff2, missing_params,
+                                    pseudoatoms=False, approx_match=True,
+                                    user_match=False, verbose=True)
+
+if __name__ == '__main__':
+    pipeline()
