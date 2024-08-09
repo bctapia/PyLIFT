@@ -6,9 +6,18 @@
 PyLIFT documentation
 ====================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+Welcome to the PyLIFT documentation. This guide will help you understand how to use and contribute to the PyLIFT project.
+
+Please refer to the sections below for detailed information.
+
+Contents
+========
+
+.. toctree::
+   :maxdepth: 4
+   :caption: Contents:
+
+   pylift
 
 
 pylift
@@ -18,6 +27,3 @@ pylift
    :maxdepth: 4
 
    pylift
-
-
-
