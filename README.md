@@ -1,5 +1,7 @@
 ![GitHub License](https://img.shields.io/github/license/bctapia/PyLIFT?logoColor=0000FF&link=SETLINKHERE) ![GitHub repo size](https://img.shields.io/github/repo-size/bctapia/PyLIFT)
 ![GitHub Release](https://img.shields.io/github/v/release/bctapia/PyLIFT)
+[![Documentation Status](https://readthedocs.org/projects/pylift-mit/badge/?version=latest)](https://pylift-mit.readthedocs.io/en/latest/?badge=latest)
+
 
 
 

@@ -195,9 +195,7 @@ def read_topo(pseudoatoms: str,
     improper_section = False
     mass_section = False
     atom_section = False
-    
-    remaining = False
-    atom_remaining = False
+
 
     header_section = True
 
@@ -212,10 +210,17 @@ def read_topo(pseudoatoms: str,
     header = {}
     footer = {}
 
+    xlo = None
+    xhi = None
+    ylo = None
+    yhi = None
+    zlo = None
+    zhi = None
+
     for i, line in enumerate(lines):
 
         line = line.strip()
-        pattern = r'[ \-]+'
+        pattern = r'[ \-]+' # splitting based on space or '-'
         columns = re.split(pattern, line)
 
         if not line:
@@ -230,7 +235,7 @@ def read_topo(pseudoatoms: str,
             header_section = False
             mass_section = True
             atom_section = False
-        
+
         elif columns[0] == 'Atoms':
             pair_section = False
             bond_section = False
@@ -240,7 +245,7 @@ def read_topo(pseudoatoms: str,
             header_section = False
             mass_section = False
             atom_section = True
-        
+
         elif columns[0] == 'Bonds':
             pair_section = False
             bond_section = False
@@ -250,14 +255,15 @@ def read_topo(pseudoatoms: str,
             header_section = False
             mass_section = False
             atom_section = False
-        
+
         elif mass_section:
             mass_dict[columns[0]] = {
                     'atom': columns[3],
                     'mass': columns[1]
                 }
-        
+
         elif atom_section:
+            columns = line.split() # '-' now are important (as negative signs)
             atom_dict[columns[0]] = {'molecule': int(columns[1]),
                                      'atom_type': int(columns[2]),
                                      'charge': float(columns[3]),
@@ -265,7 +271,7 @@ def read_topo(pseudoatoms: str,
                                      'y': float(columns[5]),
                                      'z': float(columns[6]),
                                      'comment': columns[8]
-            }
+                }
 
         elif len(columns) > 1:
             if columns[1] == 'Pair':
@@ -337,40 +343,40 @@ def read_topo(pseudoatoms: str,
                     'atom_4': columns[5]
                 }
 
-        if atom_dict and any('x' in atom for atom in atom_dict.values()):
-            max_x = max(atom['x'] for atom in atom_dict.values())
-            min_x = min(atom['x'] for atom in atom_dict.values())
-            max_y = max(atom['x'] for atom in atom_dict.values())
-            min_y = min(atom['x'] for atom in atom_dict.values())
-            max_z = max(atom['x'] for atom in atom_dict.values())
-            min_z = min(atom['x'] for atom in atom_dict.values())
-            print(f"The maximum value of x is: {max_x}")
-        else:
-            print("atom_dict is empty or contains no 'x' values.")
-        #print(atom_dict)
-        #max_x = max(atom['x'] for atom in atom_dict.values())
-        #min_x = min(atom['x'] for atom in atom_dict.values())
-        #max_y = max(atom['y'] for atom in atom_dict.values())
-        #min_y = min(atom['y'] for atom in atom_dict.values())
-        #max_z = max(atom['z'] for atom in atom_dict.values())
-        #min_z = min(atom['z'] for atom in atom_dict.values())
+        # updating the box size in for the output LAMMPS file (TopoTools gives a cube of -0.5 - 0.5 xyz lengths)
+        if atom_dict and all('x' in atom for atom in atom_dict.values()):
+            xhi = max(atom['x'] for atom in atom_dict.values() if 'x' in atom and atom['x'] is not None)
+            xlo = min(atom['x'] for atom in atom_dict.values() if 'x' in atom and atom['x'] is not None)
+        if atom_dict and all('y' in atom for atom in atom_dict.values()):
+            yhi = max(atom['y'] for atom in atom_dict.values() if 'y' in atom and atom['y'] is not None)
+            ylo = min(atom['y'] for atom in atom_dict.values() if 'y' in atom and atom['y'] is not None)
+        if atom_dict and all('z' in atom for atom in atom_dict.values()):
+            zhi = max(atom['z'] for atom in atom_dict.values() if 'z' in atom and atom['z'] is not None)
+            zlo = min(atom['z'] for atom in atom_dict.values() if 'z' in atom and atom['z'] is not None)
 
 
         if not any([pair_section, bond_section, angle_section, dihedral_section, improper_section, mass_section, atom_section]):
             line_strip = line.strip()
             line_split = line_strip.split()
+            
             if header_section:
-                try:
-                    float(line_split[0])
-                    if float(line_split[0]) > 0:
-                        header[i] = {'info': line}
-                    else:
-                        header[i] = {line_split[2]: line_split[0],
-                                 line_split[3]: line_split[1]}
-                except ValueError:
-                    header[i] = {'info': line}    
+                if i == 0:
+                    header['info'] = line
+                elif len(line_split) == 2:
+                    header[str('num_'+line_split[1])] = int(line_split[0])
+                elif len(line_split) == 3:
+                    header[str('num_type_'+line_split[1])] = int(line_split[0])
+                
             else:
-                footer[i] = {'info': line}
+                footer[i+1] = {'info': line}
+    
+    header.update({'xlo': xlo,
+                  'xhi': xhi,
+                  'ylo': ylo,
+                  'yhi': yhi,
+                  'zlo': zlo,
+                  'zhi': zhi
+                  })
 
     lammps_dict = {
         'mass_dict': mass_dict,
@@ -427,6 +433,7 @@ def read_topo(pseudoatoms: str,
     return lammps_dict_full
 
 def read_gaff2(gaff2_source: str,
+               default_loc = True,
                verbose: Optional[bool] = True,
                out_json: Optional[str] = None) -> dict:
     '''
@@ -503,7 +510,6 @@ def read_gaff2(gaff2_source: str,
     Dihedrals = {}
     Impropers = {}
 
-    skipped = False
     problem = False
     please_check = False
 
@@ -515,7 +521,13 @@ def read_gaff2(gaff2_source: str,
     dihedral_pattern = re.compile(r'([a-zA-Z0-9+]+)\s*[- ]\s*([a-zA-Z0-9+]+)\s*[- ]\s*([a-zA-Z0-9+]+)\s*[- ]\s*([a-zA-Z0-9+]+)\s*(.*)')
     improper_pattern = re.compile(r'([a-zA-Z0-9+]+)\s*[- ]\s*([a-zA-Z0-9+]+)\s*[- ]\s*([a-zA-Z0-9+]+)\s*[- ]\s*([a-zA-Z0-9+]+)\s*(.*)')
 
-    with open(gaff2_source, 'r', encoding='utf-8') as file:
+    if default_loc:
+        home_directory = os.path.expanduser("~")
+        gaff2_loc = home_directory+'/amber24/dat/leap/parm/'+gaff2_source
+    else:
+        gaff2_loc = gaff2_source
+
+    with open(gaff2_loc, 'r', encoding='utf-8') as file:
         lines = file.readlines()
 
     for i, line in enumerate(lines):
@@ -552,12 +564,12 @@ def read_gaff2(gaff2_source: str,
                 Atom_1 = match.group(1)
                 Atom_2 = match.group(2)
                 Bonds[int(i+1)] = {'Bond': Atom_1+'-'+Atom_2,
-                              'r_Bond': Atom_2+'-'+Atom_1,
-                                'Atom_1': Atom_1,
-                                 'Atom_2': Atom_2,
-                                 'K': float(bond_data[0]),
-                                 'r': float(bond_data[1]),
-                                 'Information': ' '.join(map(str, bond_data[2:]))}
+                                    'r_Bond': Atom_2+'-'+Atom_1,
+                                    'Atom_1': Atom_1,
+                                    'Atom_2': Atom_2,
+                                    'K': float(bond_data[0]),
+                                    'r': float(bond_data[1]),
+                                    'Information': ' '.join(map(str, bond_data[2:]))}
             else:
                 if problem is True:
                     print(problem)
@@ -572,13 +584,13 @@ def read_gaff2(gaff2_source: str,
                 Atom_2 = match.group(2)
                 Atom_3 = match.group(3)
                 Angles[int(i+1)] = {'Angle': Atom_1+'-'+Atom_2+'-'+Atom_3,
-                               'r_Angle': Atom_3+'-'+Atom_2+'-'+Atom_1,
-                                'Atom_1': Atom_1,
-                                 'Atom_2': Atom_2,
-                                 'Atom_3': Atom_3,
-                                 'K': float(angle_data[0]),
-                                 'r': float(angle_data[1]),
-                                 'Information': ' '.join(map(str, angle_data[2:]))}
+                                    'r_Angle': Atom_3+'-'+Atom_2+'-'+Atom_1,
+                                    'Atom_1': Atom_1,
+                                    'Atom_2': Atom_2,
+                                    'Atom_3': Atom_3,
+                                    'K': float(angle_data[0]),
+                                    'theta': float(angle_data[1]),
+                                    'Information': ' '.join(map(str, angle_data[2:]))}
             else:
                 print(f'Matching problem with {line}')
 
@@ -595,18 +607,18 @@ def read_gaff2(gaff2_source: str,
                 Atom_3 = match.group(3)
                 Atom_4 = match.group(4)
                 Dihedrals[int(i+1)] = {'Dihedral': Atom_1+'-'+Atom_2+'-'+Atom_3+'-'+Atom_4,
-                                  'r_Dihedral': Atom_4+'-'+Atom_3+'-'+Atom_2+'-'+Atom_1,
-                                'Atom_1': Atom_1,
-                                 'Atom_2': Atom_2,
-                                 'Atom_3': Atom_3,
-                                 'Atom_4': Atom_4,
-                                 'm': 1,
-                                 'K': K,
-                                 'n': int(float(dihedral_data[3])),
-                                 'd': float(dihedral_data[2]),
-                                 'Information': ' '.join(map(str, dihedral_data[4:]))}
+                                        'r_Dihedral': Atom_4+'-'+Atom_3+'-'+Atom_2+'-'+Atom_1,
+                                        'Atom_1': Atom_1,
+                                        'Atom_2': Atom_2,
+                                        'Atom_3': Atom_3,
+                                        'Atom_4': Atom_4,
+                                        'm': 1,
+                                        'K': K,
+                                        'n': int(float(dihedral_data[3])),
+                                        'd': float(dihedral_data[2]),
+                                        'Information': ' '.join(map(str, dihedral_data[4:]))}
             else:
-                print(f'Matching problem with {line}')
+                print(f'[read_gaff2] Matching problem with {line}')
 
         elif section_counter == 5:  # improper info
 
@@ -630,15 +642,15 @@ def read_gaff2(gaff2_source: str,
                 Atom_4 = match.group(4)
 
                 Impropers[int(i+1)] = {'Improper': Atom_1+'-'+Atom_2+'-'+Atom_3+'-'+Atom_4,
-                                  'r_Improper': Atom_4+'-'+Atom_3+'-'+Atom_2+'-'+Atom_1,
-                                 'Atom_1':Atom_1,
-                                 'Atom_2': Atom_2,
-                                 'Atom_3': Atom_3,
-                                 'Atom_4': Atom_4,
-                                 'K': float(improper_data[0]),
-                                 'n': int(float(improper_data[2])),
-                                 'd': d,
-                                 'Information': ' '.join(map(str, dihedral_data[3:]))}
+                                        'r_Improper': Atom_4+'-'+Atom_3+'-'+Atom_2+'-'+Atom_1,
+                                        'Atom_1':Atom_1,
+                                        'Atom_2': Atom_2,
+                                        'Atom_3': Atom_3,
+                                        'Atom_4': Atom_4,
+                                        'K': float(improper_data[0]),
+                                        'n': int(float(improper_data[2])),
+                                        'd': d,
+                                        'Information': ' '.join(map(str, dihedral_data[3:]))}
             else:
                 print(f'Matching problem with {line}')
              
@@ -771,12 +783,15 @@ def read_frcmod(frcmod_file: str,
         line = line.strip()
         columns = line.split()
 
-        dihedral_pattern = re.compile(r'([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s+(\d+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+(same)\s+(as)\s+([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s*,\s*(penalty)\s+(score=)\s*([\d.]+)')
+        # regex to split based upon space or '-'
+        bond_pattern = re.compile(r'[\s-]+')
+        angle_pattern = re.compile(r'[\s-]+')
 
+        # these require special regex patterns because of the wildcard X causing problems with line splitting
+        dihedral_pattern = re.compile(r'([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s+(\d+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+(same)\s+(as)\s+([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s*,\s*(penalty)\s+(score=)\s*([\d.]+)')
         improper_pattern = re.compile(
         r'([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*'
-        r'(.*?)(?:\s*([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+),\s*penalty score=\s*([\d.]+))?$'
-    )
+        r'(.*?)(?:\s*([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+)\s*[-\s]\s*([a-zA-Z0-9+]+),\s*penalty score=\s*([\d.]+))?$')
 
 
         if line.startswith('MASS'):
@@ -830,35 +845,70 @@ def read_frcmod(frcmod_file: str,
         elif mass_section:
             if not line:
                 continue
-            mass_dict = {'message': 'NOT YET IMPLEMENTED'}
-            if mass_check is False:
-                print('mass calculations not yet supported')
-                print('please send frcmod file to bctapia@mit.edu to update this!')
-                mass_check = True
+            mass_dict[i+1] = {'atom': columns[0],
+                              'rep_atom': columns[-1],
+                              'mass': columns[1],
+                              'unknown_param': columns[2],
+                              'information': columns[3:]}
 
         elif bond_section:
             if not line:
                 continue
-            bond_dict = {'message': 'NOT YET IMPLEMENTED'}
-            if bond_check is False:
-                print('bond calculations not yet supported')
-                print('please send frcmod file to bctapia@mit.edu to update this!')
-                bond_check = True
+            match = bond_pattern.match(line)
+            if match:
+                Atom_1 = match.group(1)
+                Atom_2 = match.group(2)
+                K = float(match.group(3))
+                r = float(match.group(4))
+                rep_Atom_1 = match.group(7)
+                rep_Atom_2 = match.group(8)
+                penalty = float(match.group(match.lastindex))
+                bond_dict[i+1] = {'Bond': Atom_1+'-'+Atom_2,
+                                    'r_Bond': Atom_2+'-'+Atom_1,
+                                    'atom_1': Atom_1,
+                                    'atom_2': Atom_2,
+                                    'K': K,
+                                    'r': r,
+                                    'rep_Bond': rep_Atom_1+'-'+rep_Atom_2,
+                                    'rep_r_Bond': rep_Atom_2+'-'+rep_Atom_1,
+                                    'rep_atom_1': rep_Atom_1,
+                                    'rep_atom_2': rep_Atom_2,
+                                    'penalty_score': penalty}
 
         elif angle_section:
             if not line:
                 continue
-            angle_dict = {'message': 'NOT YET IMPLEMENTED'}
-            if angle_check is False:
-                print('angle calculations not yet supported')
-                print('please send frcmod file to bctapia@mit.edu to update this!')
-                angle_check = True
+            match = bond_pattern.match(line)
+            if match:
+                Atom_1 = match.group(1)
+                Atom_2 = match.group(2)
+                Atom_3 = match.group(3)
+                K = float(match.group(4))
+                theta = float(match.group(5))
+                rep_Atom_1 = match.group(8)
+                rep_Atom_2 = match.group(9)
+                rep_Atom_3 = match.group(10)
+                penalty = float(match.group(match.lastindex))
+                bond_dict[i+1] = {'Angle': Atom_1+'-'+Atom_2+'-'+Atom_3,
+                                    'r_Bond': Atom_3+'-'+Atom_2+'-'+Atom_1,
+                                    'atom_1': Atom_1,
+                                    'atom_2': Atom_2,
+                                    'atom_3': Atom_3,
+                                    'K': K,
+                                    'theta': theta,
+                                    'rep_Angle': rep_Atom_1+'-'+rep_Atom_2+'-'+rep_Atom_3,
+                                    'rep_r_Angle': rep_Atom_3+'-'+rep_Atom_2+'-'+rep_Atom_1,
+                                    'rep_atom_1': rep_Atom_1,
+                                    'rep_atom_2': rep_Atom_2,
+                                    'rep_Atom_3': rep_Atom_3,
+                                    'penalty_score': penalty}
 
         elif dihedral_section:
             if not line:
                 continue
             match = dihedral_pattern.match(line)
             if match:
+                # see read_gaff2 for derivation of K
                 K = float(match.group(6))/float(match.group(5))
                 Atom_1 = match.group(1)
                 Atom_2 = match.group(2)
@@ -868,6 +918,7 @@ def read_frcmod(frcmod_file: str,
                 rep_Atom_2 = match.group(12)
                 rep_Atom_3 = match.group(13)
                 rep_Atom_4 = match.group(14)
+                penalty = float(match.group(match.lastindex))
                 dihedral_dict[i+1] = {'Dihedral': Atom_1+'-'+Atom_2+'-'+Atom_3+'-'+Atom_4,
                                   'r_Dihedral': Atom_4+'-'+Atom_3+'-'+Atom_2+'-'+Atom_1,
                                     'atom_1': Atom_1,
@@ -884,7 +935,7 @@ def read_frcmod(frcmod_file: str,
                                     'rep_atom_2': rep_Atom_2,
                                     'rep_atom_3': rep_Atom_3,
                                     'rep_atom_4': rep_Atom_4,
-                                    'penalty_score': float(match.group(match.lastindex))}
+                                    'penalty_score': penalty}
             else:
                 print(f'Matching problem with {line}')
 
@@ -894,14 +945,15 @@ def read_frcmod(frcmod_file: str,
                 continue
             match = improper_pattern.match(line)
             if match:
-
+                # see read_gaff2 for derivation of d
                 if float(match.group(6)) == float(180.0):
                     d = int(-1)
                 elif float(match.group(6)) == float(0):
                     d = int(1)
-                else: 
+                else:
                     print('unknown d-value, writing as None')
                     d = None
+
                 Atom_1 = match.group(1)
                 Atom_2 = match.group(2)
                 Atom_3 = match.group(3)
@@ -958,11 +1010,13 @@ def read_frcmod(frcmod_file: str,
         elif nonbon_section:
             if not line:
                 continue
-            nonbon_dict = {'NOT YET IMPLEMENTED'}
-            if nonbon_check is False:
-                print('nonbond calculations not yet supported')
-                print('please send frcmod file to bctapia@mit.edu to update this!')
-                nonbon_check = True
+            # see read_gaff2 for derivation of sigma
+            sigma = float(columns[1])*2*2**(-1/6)
+            eps = float(columns[2])
+            nonbon_dict[i+1] = {'atom': columns[0],
+                              'rep_atom': columns[-1],
+                              'eps': eps,
+                              'sigma': sigma}
 
     frcmod_dict = {'mass_dict': mass_dict,
                    'bond_dict': bond_dict,

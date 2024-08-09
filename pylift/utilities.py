@@ -69,7 +69,8 @@ def cleanup_pylift(user_files: list[str] = None,
         if antechamber:
             for filename in fnmatch.filter(files, 'ANTECHAMBER*'):
                 file_list.append(os.path.join(root, filename))
-            file_list.append(os.path.join(root, 'ATOMTYPE.INF'))
+            for filename in ['ATOMTYPE.INF', 'sqm.in', 'sqm.out', 'sqm.pdb']:
+                file_list.append(os.path.join(root, filename))
 
     result = {}
     for file_path in file_list:
@@ -81,12 +82,13 @@ def cleanup_pylift(user_files: list[str] = None,
                 result[file_path] = "File does not exist"
         except Exception as e:
             result[file_path] = f"Failed to remove: {e}"
-    print('[md_builder] cleanup complete')
+    print('[cleanup_pylift] cleanup complete')
 
     return result
 
 def read_json(in_json):
     '''
+    Reads a json file from pylift/ff_data directory
     '''
     with pkg_resources.path('pylift.ff_data', in_json) as file_path:
         with open(file_path, encoding='utf-8') as file:

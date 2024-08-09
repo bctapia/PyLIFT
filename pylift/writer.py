@@ -110,16 +110,21 @@ def write_lammps(lammps_dict, lammps_out, comment_style=None):
 
     with open(lammps_out, 'w', encoding='utf-8') as file:
 
-        for key, value in header_dict.items():
-            if value.get('xlo'):
-                file.write(f"{value['xlo']} {value['xhi']} xlo xhi\n")
-            elif value.get('ylo'):
-                file.write(f"{value['ylo']} {value['yhi']} ylo yhi\n")
-            elif value.get('zlo'):
-                file.write(f"{value['zlo']} {value['zhi']} zlo zhi\n")
-            else:
-                file.write(f"{value['info']}\n")
-
+        file.write(f"{header_dict.get('info')}\n")
+        file.write(f"{header_dict.get('num_atoms')} atoms\n")
+        file.write(f"{header_dict.get('num_bonds')} bonds\n")
+        file.write(f"{header_dict.get('num_angles')} angles\n")
+        file.write(f"{header_dict.get('num_dihedrals')} dihedrals\n")
+        file.write(f"{header_dict.get('num_impropers')} impropers\n")
+        file.write(f"{header_dict.get('num_type_atom')} atom types\n")
+        file.write(f"{header_dict.get('num_type_bond')} bond types\n")
+        file.write(f"{header_dict.get('num_type_angle')} angle types\n")
+        file.write(f"{header_dict.get('num_type_dihedral')} dihderal types\n")
+        file.write(f"{header_dict.get('num_type_improper')} improper types\n")
+        file.write(f"{header_dict.get('xlo')} {header_dict.get('xhi')} xlo xhi\n")
+        file.write(f"{header_dict.get('ylo')} {header_dict.get('yhi')} ylo yhi\n")
+        file.write(f"{header_dict.get('zlo')} {header_dict.get('zhi')} zlo zhi\n")
+        
         file.write("\nMasses\n")
         for key, value in mass_dict.items():
             file.write(f"{key} {value['mass']}")
@@ -155,13 +160,12 @@ def write_lammps(lammps_dict, lammps_out, comment_style=None):
 
         for key, value in angle_dict.items():
             K = angle_dict[key].get('K')
-            r = angle_dict[key].get('r')
-            file.write(f"{key} {K} {r}")
+            theta = angle_dict[key].get('theta')
+            file.write(f"{key} {K} {theta}")
             if comment_style is not None:
                 a_1 = angle_dict_user[key].get('atom_1')
-                a_3 = angle_dict_user[key].get('atom_2')
+                a_2 = angle_dict_user[key].get('atom_2')
                 a_3 = angle_dict_user[key].get('atom_3')
-                a_4 = angle_dict_user[key].get('atom_4')
                 file.write(f" # {a_1}{comment_style}{a_2}{comment_style}{a_3}\n")
             else:
                 file.write('\n')

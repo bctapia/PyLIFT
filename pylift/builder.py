@@ -142,9 +142,9 @@ def remove_h(mol2_dict: dict,
         charge_distribution (str) : method to distribute the charge of removed hydrogens 
             Options: 'heavy', 'uniform', None  
             'heavy': Charge from removed hydrogens is consolidated into the corresponding heavy atom
-                recommended if specific_atoms = None
+                recommended if specific_atoms = None or if adjust_polymer_charges will be used
             'uniform': Charge from removed hydrogens is distributed across all remaining atoms
-                recommended if specific_atoms != None
+                recommended if specific_atoms != None and adjust_polymer_charges will not be used
              None: charge is not adjusted (will lead to a molecule with a different overall charge)
                 not recommended
         h_identifiers (list[str]) : contains all identifiers hydrogen atom types may start with
@@ -313,7 +313,7 @@ def remove_h(mol2_dict: dict,
         print(f'[remove_h] Overall molecule charge differs by {charge_percent_diff:.2e}% from original charge')
         
         if charge_percent_diff < 1E-7:
-            print(f'[remove_h] Rounding error due to floating point arithmetic; Small changes can safely be disregarded')
+            print('[remove_h] Rounding error due to floating point arithmetic; Small changes can safely be disregarded')
         
     print("[remove_h] completed")
            
@@ -354,11 +354,12 @@ def assign_linkers(mol2_dict: dict,
 
     return mol2_dict
 
-def adjust_polymer_charges(monomer_dict: dict,
+def adjust_charges(monomer_dict: dict,
                           xmer_dict: dict,
                           monomer_atoms: list[int],
                           xmer_atoms: list[int],
-                          forced_charge: Optional[float] = float(0)) -> dict:
+                          forced_charge: Optional[float] = float(0),
+                          verbose: Optional[bool] = True) -> dict:
     '''
     Adjust charge on atoms involved/near to linkers by using an xmer (e.g, dimer) for some charges 
         (e.g., adjust the charges on the heavy atoms involved in polymerization 
@@ -375,11 +376,45 @@ def adjust_polymer_charges(monomer_dict: dict,
             Charge is uniformly distributed across all atoms including monomer_atoms
             If forced_charge=None, forced_charge is the overall_charge existing prior to adjustments
     '''
-    # goal: read in monomer and dimer mol2 files, ask for current atoms, ask for new atoms
-    # place charge of new atoms onto charge of old atoms
-    # distribute any remaining charge across all of the remaining atoms
+   
+    monomer_overall_charge = monomer_dict['auxinfo_dict']['molecule_info'].get('total_charge')
+    overall_charge_updated = float(0)
 
-# need to add mass addition, box size increasing
+    if forced_charge is not None:
+        monomer_overall_charge = forced_charge
+    
+    for i, monomer_atom in enumerate(monomer_atoms):
+        xmer_atom = xmer_atoms[i]
+        xmer_atom_dict = xmer_dict['atom_dict'].get(str(xmer_atom))
+        monomer_atom_dict = monomer_dict['atom_dict'].get(str(monomer_atom))
+
+        if not xmer_atom_dict:
+            print(f'[adjust_polymer_charges] No xmer atom {xmer_atom} found')
+            print('[adjust_polymer_charges] no charge adjustment performed')
+            return
+        if not monomer_atom_dict:
+            print(f'[adjust_polymer_charges] No monomer atom {monomer_atom} found')
+            print('[adjust_polymer_charges] no charge adjustment performed')
+            return
+ 
+        xmer_atom_charge = xmer_atom_dict['charge']
+        monomer_dict['atom_dict'][str(monomer_atom)].update({'charge': xmer_atom_charge})
+
+        if verbose:
+            print(f"Updated atom {monomer_atom} charge from {monomer_atom_dict.get('charge')} to {xmer_atom_charge}")
+
+    # getting new overall charge information
+    for key, value in monomer_dict['atom_dict'].items():
+        overall_charge_updated += float(value['charge'])
+
+    uniform_charge_increment = (monomer_overall_charge - overall_charge_updated)/len(monomer_dict['atom_dict'])
+
+    for key, value in monomer_dict['atom_dict'].items():
+        value['charge'] = float(value['charge']) + uniform_charge_increment
+   
+    return monomer_dict
+
+# need to add frcmod for mass, bond, angle, nonbon
 def add_ff_params(lammps_dict: dict,
                   ff_dict: dict,
                   missing_ff_params: dict,
@@ -428,7 +463,8 @@ def add_ff_params(lammps_dict: dict,
     ff_impropers = ff_dict.get('Impropers')
 
     if missing_ff_params is not None:
-        missing_ff_pairs = missing_ff_params.get('pair_dict')
+        missing_ff_mass = missing_ff_params.get('mass_dict')
+        missing_ff_pairs = missing_ff_params.get('nonbon_dict')
         missing_ff_bonds = missing_ff_params.get('bond_dict')
         missing_ff_angles = missing_ff_params.get('angle_dict')
         missing_ff_dihedrals = missing_ff_params.get('dihedral_dict')
@@ -451,6 +487,16 @@ def add_ff_params(lammps_dict: dict,
                     sigma = gaff_value['sigma']
                     found = True
                     break
+            if found is False:
+                for frcmod_key, frcmod_value in missing_ff_pairs.items():
+                    if pair == frcmod_value['atom']:
+                        eps = frcmod_value['eps']
+                        sigma = frcmod_value['sigma']
+                        found = True
+                        if verbose:
+                            print(f"FRCMOD REPLACEMENT FOUND: Atom {pair} found in frcmod as {frcmod_value['atom']}")
+                        found = True
+                        break
             if found:
                 lammps_dict['lammps_dict_ff_form']['pair_dict'][key].update({'eps': eps,
                                                                          'sigma': sigma})
@@ -464,9 +510,18 @@ def add_ff_params(lammps_dict: dict,
             if atom == gaff_value['Atom']:
                 mass = gaff_value['Mass']
                 found = True
+                break
+        if found is False:
+            for frcmod_key, frcmod_value in missing_ff_mass.items():
+                if atom in frcmod_value['atom']:
+                    mass = frcmod_value['mass']
+                    found = True
+                    if verbose:
+                        print(f"FRCMOD REPLACEMENT FOUND: Mass {mass} found in frcmod as {frcmod_value['mass']}")
+                    found = True
+                    break
         if found:
             lammps_dict['lammps_dict_ff_form']['mass_dict'][key].update({'mass': mass})
-        
         elif verbose:
             print(f"Mass values for Atom {atom} not found in ff_dict, keeping TopoTools mass")
 
@@ -479,6 +534,16 @@ def add_ff_params(lammps_dict: dict,
                 r = gaff_value['r']
                 found = True
                 break
+        if found is False:
+            for frcmod_key, frcmod_value in missing_ff_bonds.items():
+                if bond in (frcmod_value['Bond'], frcmod_value['r_Bond']):
+                    K = frcmod_value['K']
+                    r = frcmod_value['r']
+                    found = True
+                    if verbose:
+                        print(f"FRCMOD REPLACEMENT FOUND: Bond {bond} found in frcmod as {frcmod_value['rep_Bond']}")
+                    found = True
+                    break
         if found:
             lammps_dict['lammps_dict_ff_form']['bond_dict'][key].update({'K': K,
                                                                          'r': r})
@@ -492,26 +557,37 @@ def add_ff_params(lammps_dict: dict,
         for gaff_key, gaff_value in ff_angles.items():
             if angle == gaff_value['Angle'] or angle == gaff_value['r_Angle']:
                 K = gaff_value['K']
-                r = gaff_value['r']
+                theta = gaff_value['theta']
                 found = True
                 #print(f"Angle: {angle}, {gaff_value['Angle']}, {gaff_value['r_Angle']}, {K}, {r}")
                 break
+        if found is False:
+            for frcmod_key, frcmod_value in missing_ff_angles.items():
+                if angle in (frcmod_value['Angle'], frcmod_value['r_Angle']):
+                    K = frcmod_value['K']
+                    theta = frcmod_value['theta']
+                    found = True
+                    if verbose:
+                        print(f"FRCMOD REPLACEMENT FOUND: Angle {angle} found in frcmod as {frcmod_value['rep_Angle']}")
+                    found = True
+                    break
         if found:
             lammps_dict['lammps_dict_ff_form']['angle_dict'][key].update({'K': K,
-                                                                          'r': r})
+                                                                          'theta': theta})
         elif verbose:
             print(f"FF values for Angle {angle} not found in ff_dict; please populate manually")
 
     for key, value in dihedral_dict.items():
         dihedral = str(value['atom_1']+'-'+value['atom_2']+'-'+value['atom_3']+'-'+value['atom_4'])
+        print(dihedral)
         if approx_match:
             approx_dihedral = str('X-'+value['atom_2']+'-'+value['atom_3']+'-X')
         else:
             approx_dihedral = 'NOT A VALUE TO LOOK UP'
         found = False
         for gaff_key, gaff_value in ff_dihedrals.items():
-            if (dihedral in (gaff_value['Dihedral'], gaff_value['r_Dihedral']) or \
-                        approx_dihedral in (gaff_value['Dihedral'], gaff_value['r_Dihedral'])):
+            if dihedral in (gaff_value['Dihedral'], gaff_value['r_Dihedral']) or \
+                        approx_dihedral in (gaff_value['Dihedral'], gaff_value['r_Dihedral']):
                 m = gaff_value['m']
                 K = gaff_value['K']
                 n = gaff_value['n']
@@ -523,10 +599,10 @@ def add_ff_params(lammps_dict: dict,
             for frcmod_key, frcmod_value in missing_ff_dihedrals.items():
                 if (dihedral in (frcmod_value['Dihedral'], frcmod_value['r_Dihedral']) or \
                     approx_dihedral in (frcmod_value['Dihedral'], frcmod_value['r_Dihedral'])):
-                    m = gaff_value['m']
-                    K = gaff_value['K']
-                    n = gaff_value['n']
-                    d = gaff_value['d']
+                    m = frcmod_value['m']
+                    K = frcmod_value['K']
+                    n = frcmod_value['n']
+                    d = frcmod_value['d']
                     found = True
                     if verbose:
                         print(f"FRCMOD REPLACEMENT FOUND: Dihedral {dihedral} found in frcmod as {frcmod_value['rep_Dihedral']}")
@@ -553,8 +629,8 @@ def add_ff_params(lammps_dict: dict,
         found = False
 
         for gaff_key, gaff_value in ff_impropers.items():
-            if (improper in (gaff_value['Improper'], gaff_value['r_Improper']) or \
-                        approx_improper in (gaff_value['Improper'], gaff_value['r_Improper'])):
+            if improper in (gaff_value['Improper'], gaff_value['r_Improper']) or \
+                        approx_improper in (gaff_value['Improper'], gaff_value['r_Improper']):
                 K = gaff_value['K']
                 n = gaff_value['n']
                 d = gaff_value['d']
@@ -566,9 +642,9 @@ def add_ff_params(lammps_dict: dict,
             for frcmod_key, frcmod_value in missing_ff_impropers.items():
                 if (improper in (frcmod_value['Improper'], frcmod_value['r_Improper']) or \
                         approx_improper in (frcmod_value['Improper'], frcmod_value['r_Improper'])):
-                    K = gaff_value['K']
-                    n = gaff_value['n']
-                    d = gaff_value['d']
+                    K = frcmod_value['K']
+                    n = frcmod_value['n']
+                    d = frcmod_value['d']
                     found = True
                     if verbose:
                         if frcmod_value['rep_Improper']:
