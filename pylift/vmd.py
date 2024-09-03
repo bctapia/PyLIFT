@@ -86,6 +86,15 @@ def run_vmd_commands(commands: str,
                      verbose: Optional[bool] = True) -> tuple[str, str, int]:
     '''
     pylift.vmd.run_vmd_commands
+
+    Send and run commands in VMD.
+
+    Arguments:
+        commands (str): Commands to run in VMD
+        verbose (bool): Print out additional information to screen
+
+    Returns:
+        tuple: process output, prcess error, process returncode
     '''
     try:
         process = subprocess.Popen([VMD_EXEC, '-dispdev', 'text'],
@@ -128,7 +137,21 @@ def topo_write(molecule_in: str,
                     impropers: Optional[bool] = True,
                     verbose: Optional[bool] = True) -> None:
     '''
-    pysimm.vmd.writelammpsdata
+    pylift.vmd.writelammpsdata
+
+    Writes a skeleton LAMMPS file using TopoTools in VMD.
+
+    Arguments:
+        molecule_in (str): filename of molecule to be read into VMD
+        lammps_out (str): filename of skelton LAMMPS file to be created
+        bonds (bool): if TopoTools should include bond section
+        angles (bool): if TopoTools should include angles section
+        dihedrals (bool): if TopoTools should include dihedrals section
+        impropers (bool): if TopoTools should include impropers section
+        verbose (bool): if additional information should be printed to screen
+
+    Returns:
+        None
     '''
     cmd = f"""
     mol new {molecule_in}

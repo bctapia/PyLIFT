@@ -1,9 +1,12 @@
-# All Atom Molecule Build
-This tutorial covers how to use PyLIFT to build an all-atom LAMMPS input script for the polymer of intrinisic microporisity, PIM-1:
+# United Atom Molecule Build
+
+This tutorial covers how to use PyLIFT to build an all-atom LAMMPS input script for the polymer of intrinisic microporisity, PIM-1. While not necessary, we recommend following the ```all_atom``` tutorial prior to this one. 
 
  ![image](../../images/Tutorials/PIM-1_monomer.png)
+
 ## Prerequisites
 Before using PyLIFT we have to perform a couple of GUI-based tasks:
+
 ### 1. ChemDraw
  First, we need to generate a 2D molecule structure of the molecule we want to create. If this is a new molecule, you can build it in [ChemDraw](https://revvitysignals.com/products/research/chemdraw) (or [similar](https://alternativeto.net/software/chemdraw/)) and save it as ```PIM-1.cdxml```
 
@@ -44,19 +47,22 @@ To allow PyLIFT to understand ```CANAL-Me-Me2F_monomer_Amber.mol2```, we need to
 ```
 molecule = reader.read_mol2('CANAL-Me-Me2F_Amber.mol2')
 ```
-Now, we have a dictionary named ```molecule``` which contains all of the molecules information. Because PIM-1 is a polymer, it will need to eventually undergo polymerization. pysimm provides Polymatic as a simulated-polymerization program. To use Polymatic later, we have to remove one hydrogen from each linking atom so that there is not an extra hydrogen attached after polymerization.
+Now, we have a dictionary named ```molecule``` which contains all of the molecules information.
 
-From inspecting the molecule in Avogadro, we know that the linker atoms are atoms 4, 5, 34, and 35. By removing one hydrogen from each linker, we are also inadvertantly adjusting the overall molecule charge. To maintain a net-neutral molecule, we can tell PyLIFT to uniformly redistribute the charge from each removed hydrogen back into the remaining molecule's atoms. We recommended reading the ```charge_consolidation``` tutorial for a further explanation of ```charge_distribution``` and what other types of distributions are possible! To do all this we run:
+The previous commands all had to be performed with an all-atom PIM-1 because both both PyRed and Amber require all-atom molecules. Now that the ```molecule``` is within PyLIFT, we can begin the process of creating a united-atom equivalent. Because Amber forcefields expect all-atom molecules, the forcefield-specific atom types do not contain information on how many hydrogens are attached to each heavy atom. By running
 ```
-molecule = builder.remove_h(molecule, 
-                        specific_atoms=[4,5,34,35], 
-                        num_delete=[1,1,1,1],          
-                        charge_distribution='uniform',
+molecule = convert_to_pseudo(molecule,
+                             h_identifiers = ['h', 'H'])
+```
+we are informing PyLIFT to adjust the atom types by appending the number of hydrogens (e.g., a ```c3``` atom connected to two hydrogens is now recognized in PyLIFT as a ```c32``` atom). Hydrogen atoms are recognized as any atom that starts with an 'h' or 'H'. While ```convert_to_pseudo()``` changes the atom typing, it does not actually remove the hydrogens. To remove the hydrogens from ```molecule```, we run
+```
+molecule = builder.remove_h(molecule,   
+                        charge_distribution='heavy',
                         h_identifiers = ['h','H'])
 ```
-Hydrogens are identified as any atom that starts with an 'h' or 'H'. ```num_delete[i]``` atoms are removed from ```specific_atoms[i]```.
+By specifying ```charge_distribution='heavy'```, we are telling PyLIFT to bundle the partial charges of the removed hydrogens into their respective heavy atoms to create the correct united-atom pseudoatom partial charges and keep the correct overall molecule charge. We recommended reading the ```charge_consolidation``` tutorial for a further explanation of ```charge_distribution``` and what other types of distributions are possible!
 
-Because we plan on polymerizing later, we need to set which atoms are linkers by running:
+Because PIM-1 is a polymer, it will need to eventually undergo polymerization. pysimm provides Polymatic as a simulated-polymerization program. To use Polymatic later, we must specify what the linker atoms are. By looking at the molecule from Avogadro, we can see that the linking atoms are 4, 5, 34, and 35. We denote this in PyLIFT by running:
 ```
 molecule = builder.assign_linkers(molecule, 
                                 linker_atoms=[4,35], 
@@ -83,11 +89,12 @@ vmd.topo_write('PIM-1_forTopo.tmp.mol2',
 ```
 This takes ```PIM-1_forTopo.tmp.mol2```, creates bonds, angles, dihedrals, and improper information and writes all of this to ```PIM-1_fromTopo.tmp.lmps```.
 
-Now that We have a LAMMPS file, we need to read this new information back into a PyLIFT dictionary:
+Now that we have a LAMMPS file, we need to read this new information back into a PyLIFT dictionary:
 ```
 molecule = reader.read_topo(topo_in = 'PIM-1_fromTopo.tmp.mol2',
-                            pseudoatoms = False)
+                            pseudoatoms = True)
 ```
+
 PyLIFT needs to understand the forcefield, which is available as a JSON file in PyLIFT in the ff_data folder
 ```
 gaff2 = utilities.read_json('gaff2.json')
@@ -102,11 +109,11 @@ We are now ready to add the forcefield information into the LAMMPS file:
 molecule = builder.add_ff_params(molecule,
                                 gaff2,
                                 missing_params,
-                                pseudoatoms = False,
+                                pseudoatoms = True,
                                 approx_match = True,
                                 user_match = None)
 ```
-```molecule``` is our system, ```gaff2``` is the forcefield, and ```missing_params``` are the missing forcefield parameters. We set ```pseudoatoms=False``` because this is an all-atom simulation. ```approx_match=True``` means that if we have some type of parameter (e.g., ```c3-c3-ca-c3```), PyLIFT will first look for a GAFF2 parameter that matches ```c3-c3-ca-c3``` (or ```c3-ca-c3-c3```) but if that doesn't exist, PyLIFT will look for a gaff2 parameter that matches ```X-c3-ca-X``` (or ```X-ca-c3-X```) as ```X``` denotes a wildcard in Amber. ```user_match``` allows a user to specify any other approximate matches to search for. For example for the parameter ```c3-c3-cy-c3```,  ```X-c3-cy-X``` does not exist, but ```cy``` is just a ```c3``` atom in a square system, thefore if we specify ```user_match = {'cy':'c3'}```, the system will also search for ```X-c3-c3-X```.
+```molecule``` is our system, ```gaff2``` is the forcefield, and ```missing_params``` are the missing forcefield parameters. We set ```pseudoatoms=True``` because this is a united-atom simulation. ```approx_match=True``` means that if we have some type of parameter (e.g., ```c3-c3-ca-c3```), PyLIFT will first look for a GAFF2 parameter that matches ```c3-c3-ca-c3``` (or ```c3-ca-c3-c3```) but if that doesn't exist, PyLIFT will look for a gaff2 parameter that matches ```X-c3-ca-X``` (or ```X-ca-c3-X```) as ```X``` denotes a wildcard in Amber. ```user_match``` allows a user to specify any other approximate matches to search for. For example for the parameter ```c3-c3-cy-c3```,  ```X-c3-cy-X``` does not exist, but ```cy``` is just a ```c3``` atom in a square system, thefore if we specify ```user_match = {'cy':'c3'}```, the system will also search for ```X-c3-c3-X```.
 
 Outside of the function we can now write
 ```

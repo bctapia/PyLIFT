@@ -8,7 +8,8 @@
 # PyLIFT
 **Py**thon **L**AMMPS **I**ntegration **F**orcefield **T**ool is an open-source Python package designed to help facilatate the creation of LAMMPS input molecule files.
 
-As a new package, documentation is still in the process of being created.
+As a new package, documentation is still in the process of being created and can be found on [Read the Docs](https://pylift-mit.readthedocs.io/en/latest/)
+
 # Overview
 ### Capabilities
 This package was born out of a desire to streamline the creation of LAMMPS input files. 

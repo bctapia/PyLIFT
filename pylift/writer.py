@@ -23,16 +23,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 '''
-import os
-import fnmatch
-import re
-import importlib
-import json
-import copy
-from typing import Optional
 
-def write_mol2(mol2_dict: dict, output_file: dict) -> None:
+def write_mol2(mol2_dict: dict,
+               mol2_out: dict) -> None:
     '''
+    pylift.writer.write_mol2
+
+    Writes out a MOL2 file from PyLIFT-readable dictionaries
+
+    Arguments:
+        mol2_dict (dict): MOL2 information stored from pylift.reader.read_mol2()
+        mol2_out (str): name of output mol2 file
+
+    Returns:
+        None
     '''
     atom_dict = mol2_dict.get('atom_dict')
     bond_dict = mol2_dict.get('bond_dict')
@@ -52,7 +56,7 @@ def write_mol2(mol2_dict: dict, output_file: dict) -> None:
         print('exiting...')
         return None
 
-    with open(output_file, 'w', encoding='utf=8') as file:
+    with open(mol2_out, 'w', encoding='utf=8') as file:
         molecule_init = auxinfo_dict['header_info'].get('molecule_init', '')
         res = auxinfo_dict['molecule_info'].get('res', '')
         atom_num = auxinfo_dict['molecule_info'].get('atom_num', '0')
@@ -81,12 +85,25 @@ def write_mol2(mol2_dict: dict, output_file: dict) -> None:
         file.write(f"{auxinfo_dict['header_info']['substructure_init']}\n")
         file.write(f"{auxinfo_dict['substructure_info']['substructure']}")
 
-        print(f"[write_mol2] wrote {output_file}")
+        print(f"[write_mol2] wrote {mol2_out}")
 
         return None
 
 def write_lammps(lammps_dict, lammps_out, comment_style=None):
     '''
+    pylift.writer.write_lammps
+
+    Writes out a LAMMPS file from PyLIFT-readable dictionaries
+
+    Arguments:
+        lammps_dict (dict): LAMMPS information stored from pylift.reader.read_lammps()
+        lammps_out (str): name of output LAMMPS file
+        comment_style (str): if/how parameter types are appended as comments after parameters
+            (e.g., comment_style = ',' may append # c3,c3 to a c3-c3 bonding parameter)
+            comment_style = ',' is especially useful if using pysimm
+
+    Returns:
+        None
     '''
     lammps_dict_user_form = lammps_dict.get('lammps_dict')
     lammps_dict_ff_form = lammps_dict.get('lammps_dict_ff_form')

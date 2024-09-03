@@ -1,12 +1,7 @@
 '''
-******************************************************************************
 pylift.__init__ module
-*******************************************************************************
 
-*******************************************************************************
-License
-*******************************************************************************
-The MIT License (MIT)
+License: The MIT License (MIT)
 
 Copyright (c) 2024 Brandon C. Tapia
 
@@ -34,39 +29,47 @@ def pylift_help():
     pylift.pylift_help
 
     Prints location of resources
+
+    Arguments:
+        None
+
+    Returns:
+        None
     '''
     print('''
 Examples:
     PyLIFT/Examples/...
-    All_Atom: How to use PyLIFT to generate all atom LAMMPS input files
-    United_Atom: How to use PyLIFT to generate united atom LAMMPS input molecules
-    ff_update: How tp use PyLIFT to generate an updated forcefield JSON file by yourself
+    all_atom: How to use PyLIFT to generate all atom LAMMPS input files
+    united_atom: How to use PyLIFT to generate united atom LAMMPS input molecules
+    ff_update: How to use PyLIFT to generate an updated forcefield JSON file by yourself
           
 Documentation:
-    Coming soon!
+    https://pylift-mit.readthedocs.io/en/latest/pylift.html
           
 Source code:
     Available at https://github.com/bctapia/PyLIFT
           
 Developer: 
-    Brandon C. Tapia 
-    bctapia@mit.edu
+    Brandon C. Tapia / bctapia@mit.edu
           
 Questions?
     Please shoot me an email (bctapia@mit.edu) or post on the PyLIFT GitHub page (https://github.com/bctapia/PyLIFT)
-           ''')
+        ''')
 
 def pylift_license():
     '''
-    pylift.pylift_license()
+    pylift.pylift_license
     
     Prints the MIT License
+
+    Arguments:
+        None
+
+    Returns:
+        None
     '''
     print('''
-*******************************************************************************
-License
-*******************************************************************************
-The MIT License (MIT)
+License: The MIT License (MIT)
 
 Copyright (c) 2024 Brandon C. Tapia
 
@@ -87,4 +90,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-''')
+        ''')

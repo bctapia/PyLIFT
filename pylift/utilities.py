@@ -42,19 +42,20 @@ for module in optional_modules:
 
 def cleanup_pylift(user_files: list[str] = None,
                        temp: bool = True,
-                       antechamber: bool = True) -> dict:
+                       antechamber: bool = True,
+                       verbose: bool = True) -> dict:
     """
-    PyLIFT.utilities.cleanup_pylift
+    pylift.utilities.cleanup_pylift
 
-    Cleans up temporary files generated during program execution
+    Cleans up temporary files generated during program execution.
     
-    Parameters:
-    user_files (list[str]): List of additional file paths to be removed. Default is None.
-    temp (bool) : Removes all files with tmp in their name
-    antechamber (bool) : Removes all extraneous files generated with Antechamber
+    Arguments:
+        user_files (list[str]): List of additional file paths to be removed. Default is None.
+        temp (bool) : Removes all files with tmp in their name
+        antechamber (bool) : Removes all extraneous files generated with Antechamber
     
     Returns:
-    dict: information regarding the success/failure of deletion
+        dict: information regarding the success/failure of deletion
     """
     default_files = []
 
@@ -82,12 +83,16 @@ def cleanup_pylift(user_files: list[str] = None,
                 result[file_path] = "File does not exist"
         except Exception as e:
             result[file_path] = f"Failed to remove: {e}"
-    print('[cleanup_pylift] cleanup complete')
+
+    if verbose:
+        print('[cleanup_pylift] cleanup complete')
 
     return result
 
 def read_json(in_json):
     '''
+    pylift.utilities.read_json    
+
     Reads a json file from pylift/ff_data directory
     '''
     with pkg_resources.path('pylift.ff_data', in_json) as file_path:

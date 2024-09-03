@@ -29,7 +29,7 @@ from typing import Optional
 def convert_to_pseudo(mol2_dict: dict,
                       h_identifiers: Optional[list[str]] = ['h', 'H']) -> dict:
     '''
-    PyLIFT.builder.convert_to_pseudo
+    pylift.builder.convert_to_pseudo
 
     Converts all-atom molecules type names to be able to identify united-atom molecules. 
     Atom types are updated by appending the number of hydrogens onto the end 
@@ -95,7 +95,7 @@ def convert_to_pseudo(mol2_dict: dict,
 
 def types_to_names(mol2_dict: dict) -> dict:
     '''
-    PyLIFT.builder.types_to_names
+    pylift.builder.types_to_names
 
     Mol2 files have unique columns for atom types and atom names. 
     This function copies the forcefield descriptive atom types to the atom names
@@ -128,12 +128,12 @@ def remove_h(mol2_dict: dict,
              charge_distribution: Optional[str] = 'heavy',
              h_identifiers: list[str] = ['h', 'H']):
     '''
-    PyLIFT.builder.remove_h
+    pylift.builder.remove_h
 
     Removes hydrogen atoms. If specific_atoms is not specified, all hydrogens are removed.
     If specific_atoms is specified:
-      num_delete[i] amount of hydrogens removed from specific_atoms[i]
-      len(num_delete) therefore must equal len(specific_atoms)
+        num_delete[i] amount of hydrogens removed from specific_atoms[i]
+        len(num_delete) therefore must equal len(specific_atoms)
     
     Arguments:
         mol2_dict (dict) : contains molecule information generated with PyLIFT.reader.read_mol2
@@ -324,7 +324,7 @@ def assign_linkers(mol2_dict: dict,
                    linker_identifier: str = 'L'):
 
     '''
-     PyLIFT.builder.assign_linkers
+    pylift.builder.assign_linkers
 
     Adds an identifier to specific atoms to prepare them for linking in Polymatic
         
@@ -361,7 +361,9 @@ def adjust_charges(monomer_dict: dict,
                           forced_charge: Optional[float] = float(0),
                           verbose: Optional[bool] = True) -> dict:
     '''
-    Adjust charge on atoms involved/near to linkers by using an xmer (e.g, dimer) for some charges 
+    pylift.builder.adjust_charges
+
+    Adjust charge on atoms involved/near to linkers by using an xmer (e.g., dimer) for some charges 
         (e.g., adjust the charges on the heavy atoms involved in polymerization 
         as well as the hydrogens attached)
     Any charge discrpency is uniformly distributed across all atoms 
@@ -375,6 +377,9 @@ def adjust_charges(monomer_dict: dict,
         forced_charge (float): overall monomer charge after adjusting polymer charges.
             Charge is uniformly distributed across all atoms including monomer_atoms
             If forced_charge=None, forced_charge is the overall_charge existing prior to adjustments
+
+    Returns:
+        monomer_dict similar dictionary
     '''
    
     monomer_overall_charge = monomer_dict['auxinfo_dict']['molecule_info'].get('total_charge')
@@ -415,6 +420,7 @@ def adjust_charges(monomer_dict: dict,
     return monomer_dict
 
 # need to add frcmod for mass, bond, angle, nonbon
+# need to add user_match
 def add_ff_params(lammps_dict: dict,
                   ff_dict: dict,
                   missing_ff_params: dict,
@@ -423,7 +429,7 @@ def add_ff_params(lammps_dict: dict,
                   user_match: Optional[dict[str]] = None,
                   verbose: Optional[bool] = True):
     '''
-    PyLIFT.builder.add_ff_params
+    pylift.builder.add_ff_params
 
     Adds forcefield parameters from a specified forcefield to 
     pair, bond, angle, dihedral, and improper topology information
@@ -432,7 +438,7 @@ def add_ff_params(lammps_dict: dict,
         lammps_dict (dict) : contains skeleton topology for molecule
         ff_dict (dict) : contains forcefield to apply
         missing_ff_params (dict) : contains FRCMOD information
-        pseudoatoms (bool) : whether the simulation is AA (False) or UA (True) 
+        pseudoatoms (bool) : whether the simulation is all-atom (False) or united-atom (True) 
         approx_match (bool) : whether only exact matches to forcefield types should be found 
             (e.g., if  approx_match = True then c3-c3-ca-c3 would first look 
             for parameters for c3-c3-ca-c3 and if not found, then X-c3-ca-X)
@@ -441,7 +447,7 @@ def add_ff_params(lammps_dict: dict,
             look for parameters for X-c3-cy-X and if not found, then X-c3-c3-X)
     
     Returns:
-        dict: lammps_dict like dictionary containing forcefield parameters as well
+        dict: lammps_dict like dictionary with forcefield parameters
     '''
 
     lammps_dict_user_form = lammps_dict.get('lammps_dict')
@@ -579,7 +585,6 @@ def add_ff_params(lammps_dict: dict,
 
     for key, value in dihedral_dict.items():
         dihedral = str(value['atom_1']+'-'+value['atom_2']+'-'+value['atom_3']+'-'+value['atom_4'])
-        print(dihedral)
         if approx_match:
             approx_dihedral = str('X-'+value['atom_2']+'-'+value['atom_3']+'-X')
         else:

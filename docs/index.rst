@@ -3,27 +3,13 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-PyLIFT documentation
+PyLIFT Documentation
 ====================
 
 Welcome to the PyLIFT documentation. This guide will help you understand how to use and contribute to the PyLIFT project.
 
 Please refer to the sections below for detailed information.
 
-Contents
-========
-
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 3
    :caption: Contents:
-
-   pylift
-
-
-pylift
-======
-
-.. toctree::
-   :maxdepth: 4
-
-   pylift

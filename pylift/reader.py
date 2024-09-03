@@ -23,32 +23,35 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 '''
+
 import os
-import fnmatch
 import re
-import importlib
 import json
 import copy
 from typing import Optional
 
-def read_mol2(input_file: str,
+def read_mol2(mol2_in: str,
               out_json: Optional[str] = None) -> dict:
     '''
-    PyLIFT.reader.read_mol2
+    pylift.reader.read_mol2
 
-    Reads a MOL2 file and extracts the molecule, atom, bond, and substructure sections
-    into separate dictionaries, which are then combined into one dictionary.
+    Extracts all information from a provided mol2 file
+
+    Arguments:
+        mol2_in (str): mol2 input file
+        out_json (str): JSON file with mol2 information in PyLIFT-parsable dictionary
+
+    Returns:
+        dict: mol2 information in PyLIFT-parsable dictionary 
+
     '''
-    with open(input_file, 'r', encoding='utf-8') as file:
+    with open(mol2_in, 'r', encoding='utf-8') as file:
         lines = file.readlines()
 
     molecule_section = False
     atom_section = False
     bond_section = False
     substructure_section = False
-    
-    remaining_atoms = False
-    remaining_end = False
 
     atom_dict = {}
     bond_dict = {}
@@ -65,7 +68,7 @@ def read_mol2(input_file: str,
     charge_method = None
     substructure = None
 
-    for i, line in enumerate(lines):
+    for _, line in enumerate(lines):
         if not line:
             continue
 
@@ -170,24 +173,41 @@ def read_mol2(input_file: str,
     if out_json:
         with open(out_json, 'w', encoding='utf-8') as file:
             json.dump(mol2_dict, file, indent=4)
-        print(f'printed .json file ({out_json}) containing information from {input_file}')
+        print(f'printed .json file ({out_json}) containing information from {mol2_in}')
 
-    print(f'[read_mol2] read {input_file}')
+    print(f'[read_mol2] read {mol2_in}')
     return mol2_dict
 
-def read_topo(pseudoatoms: str,
-            input_file: str = 'topo.tmp.lmps',
+def read_topo(topo_in: str = 'topo.tmp.lmps',
             linker_identifier: Optional[str] = 'L',
+            pseudoatoms: str = None,
             out_json: Optional[str] = None) -> dict:
     '''
+    pylift.reader.read_topo
+
+    Extracts information from a skeleton LAMMPS output file provided from the TopoTools program
+
+    Arguments:
+        topo_in (str): input LAMMPS file from TopoTools
+        linker_identifier: same as linker_identifier previously defined in builder.assign_linkers()
+            Otherwise, set linker_identifier = None
+        Pseudoatoms: Determines wether there is the hydrogen count appended to the atoms type.
+            If builder.convert_to_pseudo() was used, pseudoatoms = True
+            Otherwise, pseudoatoms = False
+        out_json (str): JSON file with information from TopoTools file in PyLIFT-parsable dictionary
+
+    Returns:
+        dict: TopoTools information in PyLIFT-parsable dictionary 
+
     '''
     if pseudoatoms is None:
         print('Variable psuedoatoms must be set as True or False')
         return
 
-    with open(input_file, 'r', encoding='utf-8') as file:
+    with open(topo_in, 'r', encoding='utf-8') as file:
         lines = file.readlines()
 
+    # necessary for looping through sections
     pair_section = False
     bond_section = False
     angle_section = False
@@ -196,9 +216,10 @@ def read_topo(pseudoatoms: str,
     mass_section = False
     atom_section = False
 
-
+    # intiially we are in the header section
     header_section = True
 
+    # initializing dictionaries to add sections to
     mass_dict = {}
     pair_dict = {}
     bond_dict = {}
@@ -206,10 +227,10 @@ def read_topo(pseudoatoms: str,
     atom_dict = {}
     dihedral_dict = {}
     improper_dict = {}
-
     header = {}
     footer = {}
 
+    # TopoTools always sets the box to be cubic -0.5 - 0.5
     xlo = None
     xhi = None
     ylo = None
@@ -263,7 +284,7 @@ def read_topo(pseudoatoms: str,
                 }
 
         elif atom_section:
-            columns = line.split() # '-' now are important (as negative signs)
+            columns = line.split() # '-' are important here (as negative signs)
             atom_dict[columns[0]] = {'molecule': int(columns[1]),
                                      'atom_type': int(columns[2]),
                                      'charge': float(columns[3]),
@@ -273,7 +294,8 @@ def read_topo(pseudoatoms: str,
                                      'comment': columns[8]
                 }
 
-        elif len(columns) > 1:
+        elif len(columns) > 1: # to avoid errors on columns < len(2)
+
             if columns[1] == 'Pair':
                 pair_section = True
                 bond_section = False
@@ -343,22 +365,32 @@ def read_topo(pseudoatoms: str,
                     'atom_4': columns[5]
                 }
 
-        # updating the box size in for the output LAMMPS file (TopoTools gives a cube of -0.5 - 0.5 xyz lengths)
+        # updating the box size in for the output LAMMPS file
+        # TopoTools gives an autommatci (but wrong) cube of -0.5 - 0.5 xyz lengths
+
         if atom_dict and all('x' in atom for atom in atom_dict.values()):
-            xhi = max(atom['x'] for atom in atom_dict.values() if 'x' in atom and atom['x'] is not None)
-            xlo = min(atom['x'] for atom in atom_dict.values() if 'x' in atom and atom['x'] is not None)
+            xhi = max(atom['x'] for atom in atom_dict.values() \
+                      if 'x' in atom and atom['x'] is not None)
+            xlo = min(atom['x'] for atom in atom_dict.values() \
+                      if 'x' in atom and atom['x'] is not None)
         if atom_dict and all('y' in atom for atom in atom_dict.values()):
-            yhi = max(atom['y'] for atom in atom_dict.values() if 'y' in atom and atom['y'] is not None)
-            ylo = min(atom['y'] for atom in atom_dict.values() if 'y' in atom and atom['y'] is not None)
+            yhi = max(atom['y'] for atom in atom_dict.values() \
+                      if 'y' in atom and atom['y'] is not None)
+            ylo = min(atom['y'] for atom in atom_dict.values() \
+                      if 'y' in atom and atom['y'] is not None)
         if atom_dict and all('z' in atom for atom in atom_dict.values()):
-            zhi = max(atom['z'] for atom in atom_dict.values() if 'z' in atom and atom['z'] is not None)
-            zlo = min(atom['z'] for atom in atom_dict.values() if 'z' in atom and atom['z'] is not None)
+            zhi = max(atom['z'] for atom in atom_dict.values() \
+                      if 'z' in atom and atom['z'] is not None)
+            zlo = min(atom['z'] for atom in atom_dict.values() \
+                      if 'z' in atom and atom['z'] is not None)
 
 
-        if not any([pair_section, bond_section, angle_section, dihedral_section, improper_section, mass_section, atom_section]):
+        if not any([pair_section, bond_section, angle_section, \
+                    dihedral_section, improper_section, mass_section, atom_section]):
+
             line_strip = line.strip()
             line_split = line_strip.split()
-            
+
             if header_section:
                 if i == 0:
                     header['info'] = line
@@ -366,10 +398,10 @@ def read_topo(pseudoatoms: str,
                     header[str('num_'+line_split[1])] = int(line_split[0])
                 elif len(line_split) == 3:
                     header[str('num_type_'+line_split[1])] = int(line_split[0])
-                
+
             else:
                 footer[i+1] = {'info': line}
-    
+
     header.update({'xlo': xlo,
                   'xhi': xhi,
                   'ylo': ylo,
@@ -378,16 +410,16 @@ def read_topo(pseudoatoms: str,
                   'zhi': zhi
                   })
 
-    lammps_dict = {
-        'mass_dict': mass_dict,
-        'pair_dict': pair_dict,
-        'bond_dict': bond_dict,
-        'angle_dict': angle_dict,
-        'dihedral_dict': dihedral_dict,
-        'improper_dict': improper_dict,
-        'atom_dict': atom_dict
+    lammps_dict = {'mass_dict': mass_dict,
+                    'pair_dict': pair_dict,
+                    'bond_dict': bond_dict,
+                    'angle_dict': angle_dict,
+                    'dihedral_dict': dihedral_dict,
+                    'improper_dict': improper_dict,
+                    'atom_dict': atom_dict
     }
 
+    # creating a dictionary without the additional number of H atom appender
     if pseudoatoms:
         lammps_dict_ff_form = {}
         for key, value in lammps_dict.items():
@@ -405,6 +437,7 @@ def read_topo(pseudoatoms: str,
             else:
                 lammps_dict_ff_form[key] = value
 
+    # otherwise, create a deepcopy of the identical dictionary
     else:
         lammps_dict_ff_form = copy.deepcopy(lammps_dict)
 
@@ -413,6 +446,7 @@ def read_topo(pseudoatoms: str,
                         'header': header,
                         'footer': footer}
 
+    # removing the linker_identifier from lammps_dict_ff_form if present
     if linker_identifier is not None:
         for key, value in lammps_dict_full['lammps_dict_ff_form'].items():
             if isinstance(value, dict):
@@ -426,80 +460,33 @@ def read_topo(pseudoatoms: str,
     if out_json:
         with open(out_json, 'w', encoding='utf-8') as file:
             json.dump(lammps_dict_full, file, indent=4)
-        print(f'printed .json file ({out_json}) containing information from {input_file}')
+        print(f'printed .json file ({out_json}) containing information from {topo_in}')
 
-    print(f'[read_topo] read {input_file}')
+    print(f'[read_topo] read {topo_in}')
 
     return lammps_dict_full
 
-def read_gaff2(gaff2_source: str,
+def read_gaff2(gaff2_in: Optional[str] = 'gaff2.dat',
                default_loc = True,
-               verbose: Optional[bool] = True,
-               out_json: Optional[str] = None) -> dict:
+               out_json: Optional[str] = None,
+               verbose: Optional[bool] = True) -> dict:
     '''
-    Parse a GAFF2 file to extract atom, bond, angle, and other data sections.
-        Format of returned gaff2_dict:
-    gaff2_dict
-        |--Information
-                |--Header \n
-                 --Forcefield \n
-                 --Version \n
-                 --Date \n
-                 --Pair_Type \n
-                 --Bond_Type \n
-                 --Angle_Type \n
-                 --Dihedral_Type \n
-                 --Improper_Type \n
-        |--Atoms
-            |--line index
-                |--Atom \n
-                 --Mass \n
-                 --Unknown Param (not used) \n
-                 --Information \n
-        |--Pairs
-            |--line index
-                |--Pair \n
-                 --r_Pair \n
-                 --Atom \n
-                 --sigma \n
-                 --eps \n
-        |--Bonds
-            |--line index
-                |--Bond \n
-                 --r_Bond \n
-                 --Atom_1 \n
-                 --Atom_2 \n
-                 --K \n
-                 --r \n
-                 --Information \n
-        |--Angles
-            |--line index
-                |--Angle \n
-                 -- r_Angle \n
-                 --Atom_1 \n
-                 --Atom_2 \n
-                 --Atom_3 \n
-                 --Data_1 \n
-                 --Data_2 \n
-                 --Info \n
-        |--Dihedrals
-            |--line index
-                |--Atom_1 \n
-                 --Atom_2 \n
-                 --Atom_3 \n
-                 --Atom_4 \n
-                 --Data_1 \n
-                 --Data_2 \n
-                 --Info \n
-        |--Impropers
-            |--line index
-                |--Atom_1 \n
-                 --Atom_2 \n
-                 --Atom_3 \n
-                 --Atom_4 \n
-                 --Data_1 \n
-                 --Data_2 \n
-                 --Info \n
+    pylift.reader.read_gaff2
+
+    Read in a GAFF2 molecule file.
+
+    Arguments:
+        gaff2_in (str): gaff2 filename if default_loc=True, or gaff2 filepath otherwise
+        default_loc (bool): if GAFF2 file can be found in default Amber location:
+            ~/amber24/dat/leap/parm/
+        out_json (str): name of the GAFF2 information translated to a PyLIFT-readable JSON file
+        verbose (bool): Print out optional information
+
+    Returns:
+        dict: GAFF2 information translated to a PyLIFT-readable dictionary
+        
+
+    
     '''
     gaff2 = {}
     Information = []
@@ -523,9 +510,9 @@ def read_gaff2(gaff2_source: str,
 
     if default_loc:
         home_directory = os.path.expanduser("~")
-        gaff2_loc = home_directory+'/amber24/dat/leap/parm/'+gaff2_source
+        gaff2_loc = home_directory+'/amber24/dat/leap/parm/'+gaff2_in
     else:
-        gaff2_loc = gaff2_source
+        gaff2_loc = gaff2_in
 
     with open(gaff2_loc, 'r', encoding='utf-8') as file:
         lines = file.readlines()
@@ -691,15 +678,15 @@ def read_gaff2(gaff2_source: str,
                     expected_key = int(keys[j-1]) + 1
                     while expected_key < int(keys[j]):
                         expected_key += 1
-                        print(f'Missing {int(keys[j])-1} from {gaff2_source} in {dicts} Section')
+                        print(f'Missing {int(keys[j])-1} from {gaff2_in} in {dicts} Section')
                         please_check = True
         if please_check:
             print('----------------------------------------------------------')
-            print(f'Please check {gaff2_source} file for errors in these line')
+            print(f'Please check {gaff2_in} file for errors in these line')
             print('----------------------------------------------------------')
 
         else:
-            print(f'No errors found while reading {gaff2_source}!')
+            print(f'No errors found while reading {gaff2_in}!')
             for i, dicts in enumerate(gaff2.keys()):
                 if i != 0:
                     keys = list(gaff2[dicts].keys())
@@ -708,49 +695,23 @@ def read_gaff2(gaff2_source: str,
         if out_json:
             with open(out_json, 'w', encoding='utf-8') as file:
                 json.dump(gaff2, file, indent=4)
-            print(f'printed .json file ({out_json}) containing information from {gaff2_source}')
+            print(f'printed .json file ({out_json}) containing information from {gaff2_in}')
 
     return gaff2
 
 def read_frcmod(frcmod_file: str,
                 out_json: Optional[str] = None) -> dict:
     '''
-    Format of returned frcmod_dict:
-    frcmod_dict
-        |--mass_dict
-        |--bond_dict
-        |--angle_dict
-        |--dihedral_dict
-                |--line index
-                    |--atom_1 
-                    --atom_2
-                    --atom_3
-                    --atom_4
-                    --m (Fourier info 1)
-                    --K (Fourier info 2)
-                    --n (Fourier info 3)
-                    --d (Fourier info 4)
-                    --r_atom_1 (replacement atom 1)
-                    --r_atom_2 (replacement atom 2)
-                    --r_atom_3 (replacement atom 3)
-                    --r_atom_4 (replacement atom 4)
-                    --penalty_score
-        |--improper_dict
-                |--line index
-                    |--atom_1 
-                    --atom_2
-                    --atom_3
-                    --atom_4
-                    --K (Fourier info 1)
-                    --d (Fourier info 2)
-                    --n (Fourier info 3)
-                    --r_atom_1 (replacement atom 1 if provided)
-                    --r_atom_2 (replacement atom 2 if provided)
-                    --r_atom_3 (replacement atom 3 if provided)
-                    --r_atom_4 (replacement atom 4 if provided)
-                    --penalty_score (if provided)
-                    --Information (if provided)
-        |--nonbon_dict
+    pylift.reader.read_frcmod
+
+    Read in a FRCMOD file from the AmberTools prmchk or prmchk2 utilities.
+
+    Arguments:
+        frcmod_file (str): name of the FRCMOD file
+        out_json (str): name of the FRCMOD information translated to a PyLIFT-readable JSON file
+    
+    Returns:
+        dict: FRCMOD file contents in a PyLIFT-readable dictionary
     '''
     with open(frcmod_file, 'r', encoding='utf-8') as file:
         lines = file.readlines()

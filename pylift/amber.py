@@ -27,6 +27,7 @@ THE SOFTWARE.
 import subprocess
 import os
 from typing import Optional
+from pylift import utilities
 
 ANTECHAMBER_EXEC = os.environ.get('ANTECHAMBER_EXEC')
 
@@ -65,7 +66,7 @@ If you don't know where Antechamebr is, try running:
         return False
 
     try:
-        result = subprocess.run([ANTECHAMBER_EXEC, '-L'], capture_output=True, text=True, check=True)
+        result = subprocess.run([ANTECHAMBER_EXEC,'-L'], capture_output=True, text=True, check=True)
         if result.returncode == 0:
             print('====================ANTECHAMBER TEST RESULT====================')
             print(f'Antechamber successfully found at {ANTECHAMBER_EXEC}')
@@ -82,7 +83,7 @@ If you don't know where Antechamebr is, try running:
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
         return False
-    
+
 def antechamber(mol2_in: str,
                 mol2_out: str,
                 forcefield: str,
@@ -106,6 +107,8 @@ def antechamber(mol2_in: str,
 
     if charge_method:
         command += f' -c {charge_method}'
+
+    utilities.cleanup_pylift(temp=False, verbose=False)
 
     result = subprocess.run(command.split(), capture_output=True, text=True, check=True)
 
