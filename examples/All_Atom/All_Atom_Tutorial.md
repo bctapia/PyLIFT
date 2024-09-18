@@ -108,7 +108,12 @@ molecule = builder.add_ff_params(molecule,
 ```
 ```molecule``` is our system, ```gaff2``` is the forcefield, and ```missing_params``` are the missing forcefield parameters. We set ```pseudoatoms=False``` because this is an all-atom simulation. ```approx_match=True``` means that if we have some type of parameter (e.g., ```c3-c3-ca-c3```), PyLIFT will first look for a GAFF2 parameter that matches ```c3-c3-ca-c3``` (or ```c3-ca-c3-c3```) but if that doesn't exist, PyLIFT will look for a gaff2 parameter that matches ```X-c3-ca-X``` (or ```X-ca-c3-X```) as ```X``` denotes a wildcard in Amber. ```user_match``` allows a user to specify any other approximate matches to search for. For example for the parameter ```c3-c3-cy-c3```,  ```X-c3-cy-X``` does not exist, but ```cy``` is just a ```c3``` atom in a square system, thefore if we specify ```user_match = {'cy':'c3'}```, the system will also search for ```X-c3-c3-X```.
 
-Outside of the function we can now write
+We can now ask PyLIFT to write the LAMMPS file:
+```
+writer.write_lammps(molecule, 'PIM-1.lmps',           
+                            comment_style=',')
+```
+Finally, outside of the function we write
 ```
 if __name__ == '__main__':
     pipeline()

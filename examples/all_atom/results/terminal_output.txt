@@ -1,0 +1,113 @@
+This is the output that was printed in the terminal from the command:
+python3 all_atom_tutorial.py
+#####################################################################
+Antechamber stdout:
+Info: acdoctor mode is on: check and diagnose problems in the input file.
+Info: The atom type is set to gaff2; the options available to the -at flag are
+      gaff, gaff2, amber, bcc, abcg2, and sybyl.
+
+-- Check Format for mol2 File --
+   Status: pass
+
+
+[antechamber] completed
+[read_mol2] read PIM-1_monomer_Amber.mol2
+[remove_h] Overall molecule charge differs by 9.25e-11% from original charge
+[remove_h] Rounding error due to floating point arithmetic; Small changes can safely be disregarded
+[remove_h] completed
+[assign_linkers] completed
+[types_to_names] completed
+[write_mol2] wrote PIM-1_forTopo.tmp.mol2
+[vmd output]: Info) VMD for LINUXAMD64, version 1.9.3 (November 30, 2016)
+Info) http://www.ks.uiuc.edu/Research/vmd/
+Info) Email questions and bug reports to vmd@ks.uiuc.edu
+Info) Please include this reference in published work using VMD:
+Info)    Humphrey, W., Dalke, A. and Schulten, K., `VMD - Visual
+Info)    Molecular Dynamics', J. Molec. Graphics 1996, 14.1, 33-38.
+Info) -------------------------------------------------------------
+Info) Multithreading available, 20 CPUs detected.
+Info)   CPU features: SSE2 AVX AVX2 FMA
+Info) Free system memory: 15GB (95%)
+Info) Creating CUDA device pool and initializing hardware...
+Info) Detected 1 available CUDA accelerator:
+Info) [0] NVIDIA GeForce RTX 3050 4GB Laptop GPU 20 SM_8.6 @ 1.21 GHz, 4.0GB RAM, KTO, AE1, ZCP
+Info) Dynamically loaded 2 plugins in directory:
+Info) /usr/local/lib/vmd/plugins/LINUXAMD64/molfile
+Info) Using plugin mol2 for structure file PIM-1_forTopo.tmp.mol2
+Info) Using plugin mol2 for coordinates from file PIM-1_forTopo.tmp.mol2
+Info) Analyzing structure ...
+Info)    Atoms: 55
+Info)    Bonds: 60
+Info)    Angles: 0  Dihedrals: 0  Impropers: 0  Cross-terms: 0
+Info)    Bondtypes: 0  Angletypes: 0  Dihedraltypes: 0  Impropertypes: 0
+Info)    Residues: 1
+Info)    Waters: 0
+Info)    Segments: 1
+Info)    Fragments: 1   Protein: 0   Nucleic: 0
+0
+Info) Finished with coordinate file PIM-1_forTopo.tmp.mol2.
+1.7
+Info) ======================
+Info) Please cite TopoTools as:
+Info) Axel Kohlmeyer, (2016). TopoTools: Release 1.7
+Info) http://doi.org/10.5281/zenodo.50249
+Info) ======================
+
+0
+Info) writing LAMMPS Masses section.
+Info) writing LAMMPS Atoms section in style 'full'.
+Info) writing LAMMPS Bonds section.
+Info) writing LAMMPS Angles section.
+Info) writing LAMMPS Dihedrals section.
+Info) writing LAMMPS Impropers section.
+0
+Info) VMD for LINUXAMD64, version 1.9.3 (November 30, 2016)
+Info) Exiting normally.
+
+[vmd errors]: /usr/local/lib/vmd/vmd_LINUXAMD64: /lib/x86_64-linux-gnu/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+
+
+-----------------------------------------------------------
+Used TopoTools to write a skeleton lammps data file...
+Input: PIM-1_forTopo.tmp.mol2
+Output: PIM-1_fromTopo.tmp.lmps
+The user is cautioned to inspect the file
+Ensure proper information supplied in PIM-1_fromTopo.tmp.lmps
+-----------------------------------------------------------
+
+[read_topo] read PIM-1_fromTopo.tmp.lmps
+[read_json] read gaff2.json
+No errors found while reading gaff2.dat!
+Section Atoms in lines [2-100]
+Section Pairs in lines [13013-13109]
+Section Bonds in lines [103-1437]
+Section Angles in lines [1439-11150]
+Section Dihedrals in lines [11152-12968]
+Section Impropers in lines [12970-13007]
+[read_frcmod] completed
+
+============[add_ff_params] Starting forcefield search for parameters============
+FRCMOD REPLACEMENT FOUND: Dihedral ca-ca-cg-n1 found in frcmod as X-c1-ca-X
+FRCMOD REPLACEMENT FOUND: Dihedral c3-c5-c5-c5 found in frcmod as c3-c3-c3-c3
+FRCMOD REPLACEMENT FOUND: Dihedral c3-c5-c5-hc found in frcmod as c3-c3-c3-hc
+FRCMOD REPLACEMENT FOUND: Dihedral c3-c5-ca-ca found in frcmod as c3-c3-ca-ca
+FRCMOD REPLACEMENT FOUND: Dihedral c5-c5-c5-c5 found in frcmod as c3-c3-c3-c3
+FRCMOD REPLACEMENT FOUND: Dihedral c5-c5-c5-ca found in frcmod as X-c3-c3-X
+FRCMOD REPLACEMENT FOUND: Dihedral c5-c5-c5-hc found in frcmod as c3-c3-c3-hc
+FRCMOD REPLACEMENT FOUND: Dihedral c5-c5-ca-ca found in frcmod as c3-c3-ca-ca
+FRCMOD REPLACEMENT FOUND: Dihedral ca-c5-c5-hc found in frcmod as X-c3-c3-X
+FRCMOD REPLACEMENT FOUND: Dihedral ca-c5-ca-ca found in frcmod as ca-c3-ca-ca
+FRCMOD REPLACEMENT FOUND: Dihedral ca-ca-cg-n1 found in frcmod as X-c1-ca-X
+FRCMOD REPLACEMENT FOUND: Dihedral hc-c3-c5-c3 found in frcmod as c3-c3-c3-hc
+FRCMOD REPLACEMENT FOUND: Dihedral hc-c3-c5-c5 found in frcmod as c3-c3-c3-hc
+FRCMOD REPLACEMENT FOUND: Dihedral hc-c3-c5-ca found in frcmod as X-c3-c3-X
+FRCMOD REPLACEMENT FOUND: Improper ca-ca-ca-cg found in frcmod as default value
+FRCMOD REPLACEMENT FOUND: Improper oh-ca-ca-ca found in frcmod as default value
+FRCMOD REPLACEMENT FOUND: Improper c5-ca-ca-ca found in frcmod as default value
+FRCMOD REPLACEMENT FOUND: Improper ca-ca-ca-cg found in frcmod as default value
+FRCMOD REPLACEMENT FOUND: Improper ca-ca-ca-ha found in frcmod as X-X-ca-ha
+FRCMOD REPLACEMENT FOUND: Improper ca-ca-ca-oh found in frcmod as default value
+FRCMOD REPLACEMENT FOUND: Improper ca-ca-ca-os found in frcmod as default value
+=============[add_ff_params] Ending forcefield search for parameters=============
+
+[write_lammps] wrote PIM-1.lmps

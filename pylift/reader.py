@@ -429,11 +429,12 @@ def read_topo(topo_in: str = 'topo.tmp.lmps',
                     if isinstance(sub_value, dict):
                         lammps_dict_ff_form[key][sub_key] = {}
                         for item_key, item_value in sub_value.items():
-                            lammps_dict_ff_form[key][sub_key][item_key] = \
-                            item_value[:-1] if item_value else item_value
+                            if isinstance(item_value, str):
+                                lammps_dict_ff_form[key][sub_key][item_key] = item_value[:-1] if item_value else item_value
+                            else:
+                                lammps_dict_ff_form[key][sub_key][item_key] = item_value
                     else:
-                        lammps_dict_ff_form[key][sub_key] = \
-                        sub_value[:-1] if sub_value else sub_value
+                        lammps_dict_ff_form[key][sub_key] = sub_value[:-1] if isinstance(sub_value, str) else sub_value
             else:
                 lammps_dict_ff_form[key] = value
 

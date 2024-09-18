@@ -122,7 +122,7 @@ def types_to_names(mol2_dict: dict) -> dict:
 
     return mol2_dict
 
-def remove_h(mol2_dict: dict,
+def remove_h_old(mol2_dict: dict,
              specific_atoms: Optional[list[int]] = None,
              num_delete: Optional[list[int]] = None,
              charge_distribution: Optional[str] = 'heavy',
@@ -308,6 +308,8 @@ def remove_h(mol2_dict: dict,
     overall_charge = sum(float(atom_info['charge']) for atom_info in mol2_dict['atom_dict'].values())
     mol2_dict['auxinfo_dict']['molecule_info'].update({'total_charge': overall_charge})
 
+    print(original_overall_charge)
+    print(overall_charge)
     if original_overall_charge - overall_charge != 0:
         charge_percent_diff = abs(abs(original_overall_charge - overall_charge)/((original_overall_charge + overall_charge)/2)*100)
         print(f'[remove_h] Overall molecule charge differs by {charge_percent_diff:.2e}% from original charge')
@@ -318,6 +320,230 @@ def remove_h(mol2_dict: dict,
     print("[remove_h] completed")
            
     return mol2_dict
+
+def remove_h(mol2_dict: dict,
+             specific_atoms: Optional[list[int]] = None,
+             num_delete: Optional[list[int]] = None,
+             charge_distribution: Optional[str] = 'heavy',
+             h_identifiers: list[str] = ['h', 'H']):
+    '''
+    pylift.builder.remove_h
+
+    Removes hydrogen atoms. If specific_atoms is not specified, all hydrogens are removed.
+    If specific_atoms is specified:
+        num_delete[i] amount of hydrogens removed from specific_atoms[i]
+        len(num_delete) therefore must equal len(specific_atoms)
+    
+    Arguments:
+        mol2_dict (dict) : contains molecule information generated with PyLIFT.reader.read_mol2
+        specific_atoms (list[int]) : if specified, heavy atoms to remove hydrogens from. 
+            If None, all hydrogens removed
+        charge_distribution (str) : method to distribute the charge of removed hydrogens 
+            Options: 'heavy', 'uniform', None  
+            'heavy': Charge from removed hydrogens is consolidated into the corresponding heavy atom
+                recommended if specific_atoms = None or if adjust_polymer_charges will be used
+            'uniform': Charge from removed hydrogens is distributed across all remaining atoms
+                recommended if specific_atoms != None and adjust_polymer_charges will not be used
+             None: charge is not adjusted (will lead to a molecule with a different overall charge)
+                not recommended
+        h_identifiers (list[str]) : contains all identifiers hydrogen atom types may start with
+        num_delete (list[int]) : if specific_atoms is specified, num_delete specifies 
+            the number of hydrogens to remove from each specified atom
+        
+    Returns: 
+        mol2_dict similar dictionary
+    '''
+
+    atom_dict = mol2_dict.get('atom_dict')
+    bond_dict = mol2_dict.get('bond_dict')
+
+    filtered_atom_dict = {}
+    filtered_bond_dict = {}
+    hydrogen_indices = set()
+    total_hydrogen_charge = 0  # Track total charge of removed hydrogens
+
+    original_overall_charge = mol2_dict['auxinfo_dict']['molecule_info'].get('total_charge')
+
+    if original_overall_charge is None:
+        original_overall_charge = sum(float(atom_info['charge']) for atom_info in mol2_dict['atom_dict'].values())
+
+    if charge_distribution not in [None, 'heavy', 'uniform']:
+        print('charge_distribution must be None, "heavy", or "uniform"')
+        print('exiting...')
+        return
+    if specific_atoms and not num_delete:
+        print('by specifying specific_atoms, you must also specify how many hydrogens to remove via num_delete')
+        print('exiting...')
+        return
+    elif num_delete and not specific_atoms:
+        print('by specifying num_delete, you must also specify what heavy atoms to remove them from via specific_atoms')
+        print('exiting...')
+        return
+    elif specific_atoms and num_delete:
+        if len(specific_atoms) != len(num_delete):
+            print('len(specific_atoms) must equal len(num_delete)')
+            print('exiting...')
+            return
+
+        atom_hydrogens = {atom: [] for atom in specific_atoms}
+        hydrogen_to_heavy = {}
+
+        for bond_id, bond_info in bond_dict.items():
+            atom_1 = int(bond_info['atom_1'])
+            atom_2 = int(bond_info['atom_2'])
+
+            if atom_1 in specific_atoms and any(atom_dict.get(str(atom_2), {}).get('atom_type', '').startswith(h) for h in h_identifiers):
+                atom_hydrogens[atom_1].append(atom_2)
+                hydrogen_to_heavy[atom_2] = atom_1
+            if atom_2 in specific_atoms and any(atom_dict.get(str(atom_1), {}).get('atom_type', '').startswith(h) for h in h_identifiers):
+                atom_hydrogens[atom_2].append(atom_1)
+                hydrogen_to_heavy[atom_1] = atom_2
+
+        # Check for excessive hydrogen deletion
+        for heavy_atom, hydrogens in atom_hydrogens.items():
+            if len(hydrogens) < num_delete[specific_atoms.index(heavy_atom)]:
+                print(f'Warning: Attempting to delete more hydrogens ({num_delete[specific_atoms.index(heavy_atom)]}) than available ({len(hydrogens)}) for atom {heavy_atom}')
+                num_delete[specific_atoms.index(heavy_atom)] = len(hydrogens)
+
+        hydrogens_to_remove = []
+        for heavy_atom, hydrogens in atom_hydrogens.items():
+            hydrogens_to_remove.extend(hydrogens[:num_delete[specific_atoms.index(heavy_atom)]])
+
+        if hydrogens_to_remove:
+            if charge_distribution == 'heavy':
+                # Transfer hydrogen charges to heavy atoms
+                for hydrogen in hydrogens_to_remove:
+                    heavy = hydrogen_to_heavy[hydrogen]
+                    hydrogen_charge = float(atom_dict[str(hydrogen)]['charge'])
+                    atom_dict[str(heavy)]['charge'] = str(float(atom_dict[str(heavy)]['charge']) + hydrogen_charge)
+                    total_hydrogen_charge += hydrogen_charge
+
+            for key, value in atom_dict.items():
+                if not any(value['atom_type'].startswith(identifier) for identifier in h_identifiers) or int(key) not in hydrogens_to_remove:
+                    filtered_atom_dict[key] = value
+                else:
+                    hydrogen_indices.add(int(key))
+                    if charge_distribution == 'uniform':
+                        total_hydrogen_charge += float(value['charge'])
+
+            for key, value in bond_dict.items():
+                if value['atom_1'] not in hydrogen_indices and value['atom_2'] not in hydrogen_indices:
+                    filtered_bond_dict[key] = value
+
+            old_to_new_index = {}
+            new_index = 1
+            for old_index in sorted(filtered_atom_dict.keys(), key=int):
+                old_to_new_index[int(old_index)] = new_index
+                new_index += 1
+
+            renumbered_atom_dict = {}
+            for old_index, atom_info in filtered_atom_dict.items():
+                new_index = old_to_new_index[int(old_index)]
+                renumbered_atom_dict[str(new_index)] = atom_info
+
+            renumbered_bond_dict = {}
+            for bond_id, bond_info in filtered_bond_dict.items():
+                atom_1 = int(bond_info['atom_1'])
+                atom_2 = int(bond_info['atom_2'])
+                new_atom_1 = old_to_new_index[atom_1]
+                new_atom_2 = old_to_new_index[atom_2]
+                bond_type = bond_info.get('bond_type', '')
+                renumbered_bond_dict[bond_id] = {'atom_1': new_atom_1, 'atom_2': new_atom_2, 'bond_type': bond_type}
+
+            mol2_dict['atom_dict'] = renumbered_atom_dict
+            mol2_dict['bond_dict'] = renumbered_bond_dict
+            mol2_dict['auxinfo_dict']['molecule_info']['atom_num'] = len(renumbered_atom_dict)
+            mol2_dict['auxinfo_dict']['molecule_info']['bond_num'] = len(renumbered_bond_dict)
+
+            if charge_distribution == 'uniform' and len(renumbered_atom_dict) > 0:
+                uniform_charge_increment = total_hydrogen_charge / len(renumbered_atom_dict)
+                for atom in renumbered_atom_dict.values():
+                    atom['charge'] = str(float(atom['charge']) + uniform_charge_increment)
+            
+    else:
+        # Handle the case when specific_atoms is None
+        atom_hydrogens = {}
+        hydrogen_to_heavy = {}
+
+        for bond_id, bond_info in bond_dict.items():
+            atom_1 = int(bond_info['atom_1'])
+            atom_2 = int(bond_info['atom_2'])
+
+            if any(atom_dict.get(str(atom_2), {}).get('atom_type', '').startswith(h) for h in h_identifiers):
+                atom_hydrogens[atom_2] = atom_1
+                hydrogen_to_heavy[atom_2] = atom_1
+            if any(atom_dict.get(str(atom_1), {}).get('atom_type', '').startswith(h) for h in h_identifiers):
+                atom_hydrogens[atom_1] = atom_2
+                hydrogen_to_heavy[atom_1] = atom_2
+
+        hydrogens_to_remove = list(atom_hydrogens.keys())
+
+        if hydrogens_to_remove:
+            if charge_distribution == 'heavy':
+                # Transfer hydrogen charges to heavy atoms
+                for hydrogen in hydrogens_to_remove:
+                    heavy = hydrogen_to_heavy[hydrogen]
+                    hydrogen_charge = float(atom_dict[str(hydrogen)]['charge'])
+                    atom_dict[str(heavy)]['charge'] = str(float(atom_dict[str(heavy)]['charge']) + hydrogen_charge)
+                    total_hydrogen_charge += hydrogen_charge
+
+            for key, value in atom_dict.items():
+                if not any(value['atom_type'].startswith(identifier) for identifier in h_identifiers) or int(key) not in hydrogens_to_remove:
+                    filtered_atom_dict[key] = value
+                else:
+                    hydrogen_indices.add(int(key))
+                    if charge_distribution == 'uniform':
+                        total_hydrogen_charge += float(value['charge'])
+
+            for key, value in bond_dict.items():
+                if value['atom_1'] not in hydrogen_indices and value['atom_2'] not in hydrogen_indices:
+                    filtered_bond_dict[key] = value
+
+            old_to_new_index = {}
+            new_index = 1
+            for old_index in sorted(filtered_atom_dict.keys(), key=int):
+                old_to_new_index[int(old_index)] = new_index
+                new_index += 1
+
+            renumbered_atom_dict = {}
+            for old_index, atom_info in filtered_atom_dict.items():
+                new_index = old_to_new_index[int(old_index)]
+                renumbered_atom_dict[str(new_index)] = atom_info
+
+            renumbered_bond_dict = {}
+            for bond_id, bond_info in filtered_bond_dict.items():
+                atom_1 = int(bond_info['atom_1'])
+                atom_2 = int(bond_info['atom_2'])
+                new_atom_1 = old_to_new_index[atom_1]
+                new_atom_2 = old_to_new_index[atom_2]
+                bond_type = bond_info.get('bond_type', '')
+                renumbered_bond_dict[bond_id] = {'atom_1': new_atom_1, 'atom_2': new_atom_2, 'bond_type': bond_type}
+
+            mol2_dict['atom_dict'] = renumbered_atom_dict
+            mol2_dict['bond_dict'] = renumbered_bond_dict
+            mol2_dict['auxinfo_dict']['molecule_info']['atom_num'] = len(renumbered_atom_dict)
+            mol2_dict['auxinfo_dict']['molecule_info']['bond_num'] = len(renumbered_bond_dict)
+
+            if charge_distribution == 'uniform' and len(renumbered_atom_dict) > 0:
+                uniform_charge_increment = total_hydrogen_charge / len(renumbered_atom_dict)
+                for atom in renumbered_atom_dict.values():
+                    atom['charge'] = str(float(atom['charge']) + uniform_charge_increment)
+    
+    # Calculate and update overall charge
+    overall_charge = sum(float(atom_info['charge']) for atom_info in mol2_dict['atom_dict'].values())
+    mol2_dict['auxinfo_dict']['molecule_info'].update({'total_charge': overall_charge})
+
+    if original_overall_charge - overall_charge != 0:
+        charge_percent_diff = abs(abs(original_overall_charge - overall_charge)/((original_overall_charge + overall_charge)/2)*100)
+        print(f'[remove_h] Overall molecule charge differs by {charge_percent_diff:.2e}% from original charge')
+        
+        if charge_percent_diff < 1E-7:
+            print('[remove_h] Rounding error due to floating point arithmetic; Small changes can safely be disregarded')
+        
+    print("[remove_h] completed")
+           
+    return mol2_dict
+
 
 def assign_linkers(mol2_dict: dict,
                    linker_atoms: list[int],
@@ -419,7 +645,6 @@ def adjust_charges(monomer_dict: dict,
    
     return monomer_dict
 
-# need to add frcmod for mass, bond, angle, nonbon
 # need to add user_match
 def add_ff_params(lammps_dict: dict,
                   ff_dict: dict,
@@ -450,9 +675,14 @@ def add_ff_params(lammps_dict: dict,
         dict: lammps_dict like dictionary with forcefield parameters
     '''
 
+    if user_match is not None:
+        print('user_match is not yet implemented. Please contact Brandon (bctapia@mit.edu) for faster implementation if needed')
+
     lammps_dict_user_form = lammps_dict.get('lammps_dict')
 
     lammps_dict_ff_form = lammps_dict.get('lammps_dict_ff_form')
+
+    atoms_dict_with_h = lammps_dict_user_form.get('mass_dict')
 
     atoms_dict = lammps_dict_ff_form.get('mass_dict')
     pair_dict = lammps_dict_ff_form.get('pair_dict')
@@ -478,45 +708,58 @@ def add_ff_params(lammps_dict: dict,
     else:
         print('[add_ff_params] missing_ff_params dictionary was not supplied')
 
+    if pseudoatoms:
+        print('[add_ff_params] pseudoatoms=True, unable to add pair interactions...')
+
     if verbose:
         print('\n============[add_ff_params] Starting forcefield search for parameters============')
 
-    if pseudoatoms:
-        print('[add_ff_params] skipping pair interactions...')
-    else:
-        for key, value in pair_dict.items():
-            pair = value['atom']
-            found = False
-            for gaff_key, gaff_value in ff_pairs.items():
-                if pair == gaff_value['Atom_1']:
+    for key, value in pair_dict.items():
+        pair = value['atom']
+        found = False
+        for gaff_key, gaff_value in ff_pairs.items():
+            if pair == gaff_value['Atom_1']:
+                if pseudoatoms:
+                    eps = 'epsilon_placeholder'
+                    sigma = 'sigma_placeholder'
+                    found = True
+                    break
+                else:
                     eps = gaff_value['eps']
                     sigma = gaff_value['sigma']
                     found = True
                     break
-            if found is False:
-                for frcmod_key, frcmod_value in missing_ff_pairs.items():
-                    if pair == frcmod_value['atom']:
-                        eps = frcmod_value['eps']
-                        sigma = frcmod_value['sigma']
-                        found = True
-                        if verbose:
-                            print(f"FRCMOD REPLACEMENT FOUND: Atom {pair} found in frcmod as {frcmod_value['atom']}")
-                        found = True
-                        break
-            if found:
-                lammps_dict['lammps_dict_ff_form']['pair_dict'][key].update({'eps': eps,
-                                                                         'sigma': sigma})
-            elif verbose:
-                print(f"FF values for Pair {pair} not found in ff_dict; please populate manually")
+        if found is False:
+            for frcmod_key, frcmod_value in missing_ff_pairs.items():
+                if pair == frcmod_value['atom']:
+                    eps = frcmod_value['eps']
+                    sigma = frcmod_value['sigma']
+                    found = True
+                    if verbose:
+                        print(f"FRCMOD REPLACEMENT FOUND: Atom {pair} found in frcmod as {frcmod_value['atom']}")
+                    found = True
+                    break
+        if found:
+            lammps_dict['lammps_dict_ff_form']['pair_dict'][key].update({'eps': eps,
+                                                                        'sigma': sigma})
+        elif verbose:
+            print(f"FF values for Pair {pair} not found in ff_dict; please populate manually")
 
     for key, value in atoms_dict.items():
         atom = value['atom']
         found = False
         for gaff_key, gaff_value in ff_atoms.items():
             if atom == gaff_value['Atom']:
-                mass = gaff_value['Mass']
-                found = True
-                break
+                if pseudoatoms:
+                    atom_with_h = atoms_dict_with_h[key]['atom']
+                    num_h = int(atom_with_h[-1])
+                    mass = gaff_value['Mass']+num_h*1.008
+                    found = True
+                    break
+                else: 
+                    mass = gaff_value['Mass']
+                    found = True
+                    break
         if found is False:
             for frcmod_key, frcmod_value in missing_ff_mass.items():
                 if atom in frcmod_value['atom']:

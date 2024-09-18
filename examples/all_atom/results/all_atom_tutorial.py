@@ -35,7 +35,7 @@ def pipeline():
                                 pseudoatoms = False)
 
     gaff2 = utilities.read_json('gaff2.json')
-    #gaff2 = reader.read_gaff2()
+    gaff2 = reader.read_gaff2()
 
     missing_params = reader.read_frcmod('missing_ff_params.frcmod')
 
@@ -48,7 +48,7 @@ def pipeline():
 
     writer.write_lammps(molecule, 'PIM-1.lmps', comment_style=',')
 
-    utilities.cleanup_pylift()
+    #utilities.cleanup_pylift()
 
 if __name__ == '__main__':
     pipeline()

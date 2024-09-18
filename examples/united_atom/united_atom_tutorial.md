@@ -43,15 +43,15 @@ amber.antechamber('PIM-1_monomer.mol2',
 This command reads in the MOL2 file either from PyRed (if used), or that was created in Avogadro. Amber will generate a MOL2 file called ```CANAL-Me-Me2F_monomer_Amber.mol2``` containing the necessary forcefield information. If we used PyRed, then ```charge_method=None``` because charges were already determined. If we didn't use PyRed then we should specify ```charge_method=abcg2``` or another method available in Antechamber (See Ch. 15 of the [Amber Manual](https://ambermd.org/doc12/Amber24.pdf)).
 It is possible that the GAFF2 forcefield will not have every parameter necessaery. By specifying ```missing_search='parmchk2'```, the ```parmchk2``` function available in Antechamber will try to find acceptable replacements and will be available in the  ```missing_ff_params.frcmod``` file.
  
-To allow PyLIFT to understand ```CANAL-Me-Me2F_monomer_Amber.mol2```, we need to read it into PyLIFT as 
+To allow PyLIFT to understand ```'PIM-1_monomer.mol2'```, we need to read it into PyLIFT as 
 ```
-molecule = reader.read_mol2('CANAL-Me-Me2F_Amber.mol2')
+molecule = reader.read_mol2('PIM-1_monomer_Amber.mol2')
 ```
 Now, we have a dictionary named ```molecule``` which contains all of the molecules information.
 
 The previous commands all had to be performed with an all-atom PIM-1 because both both PyRed and Amber require all-atom molecules. Now that the ```molecule``` is within PyLIFT, we can begin the process of creating a united-atom equivalent. Because Amber forcefields expect all-atom molecules, the forcefield-specific atom types do not contain information on how many hydrogens are attached to each heavy atom. By running
 ```
-molecule = convert_to_pseudo(molecule,
+molecule = builder.convert_to_pseudo(molecule,
                              h_identifiers = ['h', 'H'])
 ```
 we are informing PyLIFT to adjust the atom types by appending the number of hydrogens (e.g., a ```c3``` atom connected to two hydrogens is now recognized in PyLIFT as a ```c32``` atom). Hydrogen atoms are recognized as any atom that starts with an 'h' or 'H'. While ```convert_to_pseudo()``` changes the atom typing, it does not actually remove the hydrogens. To remove the hydrogens from ```molecule```, we run
@@ -91,8 +91,8 @@ This takes ```PIM-1_forTopo.tmp.mol2```, creates bonds, angles, dihedrals, and i
 
 Now that we have a LAMMPS file, we need to read this new information back into a PyLIFT dictionary:
 ```
-molecule = reader.read_topo(topo_in = 'PIM-1_fromTopo.tmp.mol2',
-                            pseudoatoms = True)
+molecule = reader.read_topo('PIM-1_fromTopo.tmp.mol2',
+                            pseudoatoms=True)
 ```
 
 PyLIFT needs to understand the forcefield, which is available as a JSON file in PyLIFT in the ff_data folder
