@@ -1,29 +1,10 @@
 '''
-pylift.builder module
+pylift.builder
 
 License: The MIT License (MIT)
 
-Copyright (c) 2024 Brandon C. Tapia
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+Copyright 2025 Brandon C. Tapia
 '''
-
 from typing import Optional
 
 def convert_to_pseudo(mol2_dict: dict,
@@ -544,7 +525,6 @@ def remove_h(mol2_dict: dict,
            
     return mol2_dict
 
-
 def assign_linkers(mol2_dict: dict,
                    linker_atoms: list[int],
                    linker_identifier: str = 'L'):
@@ -580,6 +560,7 @@ def assign_linkers(mol2_dict: dict,
 
     return mol2_dict
 
+# *need to deal with the issue of adjusting charges if using an amber chargestyle like abcg2
 def adjust_charges(monomer_dict: dict,
                           xmer_dict: dict,
                           monomer_atoms: list[int],
@@ -645,7 +626,7 @@ def adjust_charges(monomer_dict: dict,
    
     return monomer_dict
 
-# need to add user_match
+# *need to add user_match
 def add_ff_params(lammps_dict: dict,
                   ff_dict: dict,
                   missing_ff_params: dict,
@@ -826,6 +807,7 @@ def add_ff_params(lammps_dict: dict,
         elif verbose:
             print(f"FF values for Angle {angle} not found in ff_dict; please populate manually")
 
+    # adding dihdedral forcefield data
     for key, value in dihedral_dict.items():
         dihedral = str(value['atom_1']+'-'+value['atom_2']+'-'+value['atom_3']+'-'+value['atom_4'])
         if approx_match:
@@ -861,7 +843,7 @@ def add_ff_params(lammps_dict: dict,
         if found:
             lammps_dict['lammps_dict_ff_form']['dihedral_dict'][key].update({'m': m,
                                                                              'K': K,
-                                                                             'n': n,
+                                                                             'n': int(n),
                                                                              'd': d})
         elif verbose:
             print(f"FF values for Dihedral {dihedral} not found in ff_dict")

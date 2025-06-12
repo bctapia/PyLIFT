@@ -994,10 +994,3 @@ def read_frcmod(frcmod_file: str,
 
     print('[read_frcmod] completed')
     return frcmod_dict
-
-
-
-
-
-
-

@@ -1,27 +1,9 @@
 '''
-pylift.writer module
+pylift.writer
 
 License: The MIT License (MIT)
 
-Copyright (c) 2024 Brandon C. Tapia
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+Copyright 2025 Brandon C. Tapia
 '''
 
 def write_mol2(mol2_dict: dict,
@@ -136,13 +118,15 @@ def write_lammps(lammps_dict, lammps_out, comment_style=None):
         file.write(f"{header_dict.get('num_type_atom')} atom types\n")
         file.write(f"{header_dict.get('num_type_bond')} bond types\n")
         file.write(f"{header_dict.get('num_type_angle')} angle types\n")
-        file.write(f"{header_dict.get('num_type_dihedral')} dihderal types\n")
+        file.write(f"{header_dict.get('num_type_dihedral')} dihedral types\n")
         file.write(f"{header_dict.get('num_type_improper')} improper types\n")
         file.write(f"{header_dict.get('xlo')} {header_dict.get('xhi')} xlo xhi\n")
         file.write(f"{header_dict.get('ylo')} {header_dict.get('yhi')} ylo yhi\n")
         file.write(f"{header_dict.get('zlo')} {header_dict.get('zhi')} zlo zhi\n")
         
-        file.write("\nMasses\n")
+        if len(mass_dict) != 0:
+            file.write("\nMasses\n\n")
+
         for key, value in mass_dict.items():
             file.write(f"{key} {value['mass']}")
             if comment_style is not None:
@@ -151,7 +135,9 @@ def write_lammps(lammps_dict, lammps_out, comment_style=None):
             else:
                 file.write('\n')        
 
-        file.write('\nPair Coeffs\n')
+        if len(pair_dict) != 0:
+            file.write('\nPair Coeffs\n\n')
+
         for key, value in pair_dict.items():
             file.write(f"{key} {value['eps']} {value['sigma']}")
             if comment_style is not None:
@@ -160,7 +146,8 @@ def write_lammps(lammps_dict, lammps_out, comment_style=None):
             else:
                 file.write('\n')
 
-        file.write('\nBond Coeffs\n')
+        if len(bond_dict) != 0:
+            file.write('\nBond Coeffs\n\n')
 
         for key, value in bond_dict.items():
             K = bond_dict[key].get('K')
@@ -173,7 +160,8 @@ def write_lammps(lammps_dict, lammps_out, comment_style=None):
             else:
                 file.write('\n')
 
-        file.write('\nAngle Coeffs\n')
+        if len(angle_dict) != 0:
+            file.write('\nAngle Coeffs\n\n')
 
         for key, value in angle_dict.items():
             K = angle_dict[key].get('K')
@@ -187,7 +175,8 @@ def write_lammps(lammps_dict, lammps_out, comment_style=None):
             else:
                 file.write('\n')
 
-        file.write('\nDihedral Coeffs\n')
+        if len(dihedral_dict) != 0:  
+            file.write('\nDihedral Coeffs\n\n')
 
         for key, value in dihedral_dict.items():
             m = dihedral_dict[key].get('m')
@@ -204,7 +193,8 @@ def write_lammps(lammps_dict, lammps_out, comment_style=None):
             else:
                 file.write('\n')
 
-        file.write('\nImproper Coeffs\n')
+        if len(improper_dict) != 0:
+            file.write('\nImproper Coeffs\n\n')
 
         for key, value in improper_dict.items():
             K = improper_dict[key].get('K')
@@ -220,7 +210,7 @@ def write_lammps(lammps_dict, lammps_out, comment_style=None):
             else:
                 file.write('\n')
 
-        file.write('\nAtoms # full\n')
+        file.write('\nAtoms # full\n\n')
 
         for key, value in atom_dict.items():
             molecule = atom_dict[key].get('molecule')
@@ -235,6 +225,10 @@ def write_lammps(lammps_dict, lammps_out, comment_style=None):
         for key, value in footer_dict.items():
             if value['info'].split()[0].isdigit() is False:
                 file.write('\n')
+
             file.write(f"{value['info']}\n")
+            
+            if value['info'].split()[0] in ['Bonds', 'Angles', 'Dihedrals', 'Impropers']:
+                file.write('\n')
         
     print(f"[write_lammps] wrote {lammps_out}")
