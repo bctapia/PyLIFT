@@ -1,4 +1,4 @@
-'''
+"""
 pylift.utilities module
 
 License: The MIT License (MIT)
@@ -22,7 +22,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-'''
+"""
 
 import fnmatch
 import os
@@ -30,7 +30,7 @@ import json
 import importlib
 import importlib.resources as pkg_resources
 
-optional_modules = ['rdkit', 'openbabel', 'pymol']
+optional_modules = ["rdkit", "openbabel", "pymol"]
 imported_modules = {}
 
 for module in optional_modules:
@@ -40,20 +40,22 @@ for module in optional_modules:
         imported_modules[module] = None
 
 
-def cleanup_pylift(user_files: list[str] = None,
-                       temp: bool = True,
-                       antechamber: bool = True,
-                       verbose: bool = True) -> dict:
+def cleanup_pylift(
+    user_files: list[str] = None,
+    temp: bool = True,
+    antechamber: bool = True,
+    verbose: bool = True,
+) -> dict:
     """
     pylift.utilities.cleanup_pylift
 
     Cleans up temporary files generated during program execution.
-    
+
     Arguments:
         user_files (list[str]): List of additional file paths to be removed. Default is None.
         temp (bool) : Removes all files with tmp in their name
         antechamber (bool) : Removes all extraneous files generated with Antechamber
-    
+
     Returns:
         dict: information regarding the success/failure of deletion
     """
@@ -63,14 +65,14 @@ def cleanup_pylift(user_files: list[str] = None,
     if user_files:
         file_list.extend(user_files)
 
-    for root, _, files in os.walk('.'):
+    for root, _, files in os.walk("."):
         if temp:
-            for filename in fnmatch.filter(files, '*tmp*'):
+            for filename in fnmatch.filter(files, "*tmp*"):
                 file_list.append(os.path.join(root, filename))
         if antechamber:
-            for filename in fnmatch.filter(files, 'ANTECHAMBER*'):
+            for filename in fnmatch.filter(files, "ANTECHAMBER*"):
                 file_list.append(os.path.join(root, filename))
-            for filename in ['ATOMTYPE.INF', 'sqm.in', 'sqm.out', 'sqm.pdb']:
+            for filename in ["ATOMTYPE.INF", "sqm.in", "sqm.out", "sqm.pdb"]:
                 file_list.append(os.path.join(root, filename))
 
     result = {}
@@ -85,28 +87,27 @@ def cleanup_pylift(user_files: list[str] = None,
             result[file_path] = f"Failed to remove: {e}"
 
     if verbose:
-        print('[cleanup_pylift] cleanup complete')
+        print("[cleanup_pylift] cleanup complete")
 
     return result
 
+
 def read_json(in_json):
-    '''
-    pylift.utilities.read_json    
+    """
+    pylift.utilities.read_json
 
     Reads a json file from pylift/ff_data directory
-    '''
-    with pkg_resources.path('pylift.ff_data', in_json) as file_path:
-        with open(file_path, encoding='utf-8') as file:
+    """
+    with pkg_resources.path("pylift.ff_data", in_json) as file_path:
+        with open(file_path, encoding="utf-8") as file:
             dict_file = json.load(file)
 
             print(f"[read_json] read {in_json}")
             return dict_file
 
 
-def write_json(dict_loc: dict,
-               out_json: str) -> None:
-    '''
-    '''
+def write_json(dict_loc: dict, out_json: str) -> None:
+    """ """
 
-    with open(dict_loc, 'w', encoding='utf-8') as file:
+    with open(dict_loc, "w", encoding="utf-8") as file:
         json.dump(out_json, file, indent=4)

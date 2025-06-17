@@ -1,4 +1,4 @@
-'''
+"""
 pylift.vmd module
 
 License: The MIT License (MIT)
@@ -22,23 +22,25 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-'''
+"""
 
 import subprocess
 import os
 from typing import Optional
 
-VMD_EXEC = os.environ.get('VMD_EXEC')
+VMD_EXEC = os.environ.get("VMD_EXEC")
+
 
 def test_vmd_exec():
-    '''
+    """
     Tests if VMD executable can be found and run from the environment variable.
 
     Returns:
         bool for success/fail
-    '''
+    """
     if not VMD_EXEC:
-        print('''
+        print(
+            """
 =========================VMD TEST RESULT=========================
 VMD_EXEC environment variable not set. 
 Please add the location of VMD to your environment variables by running the following in your terminal:
@@ -47,26 +49,28 @@ Please add the location of VMD to your environment variables by running the foll
 If you don't know where VMD is, try running:
     whereis vmd
 =========================VMD TEST RESULT=========================
-        ''')
+        """
+        )
         return False
 
     try:
-        _, stderr, returncode = run_vmd_commands(commands = None, verbose = False)
+        _, stderr, returncode = run_vmd_commands(commands=None, verbose=False)
 
         if returncode == 0:
-            print('=========================VMD TEST RESULT=========================')
-            print(f'VMD successfully found at {VMD_EXEC}')
-            print('=========================VMD TEST RESULT=========================')
+            print("=========================VMD TEST RESULT=========================")
+            print(f"VMD successfully found at {VMD_EXEC}")
+            print("=========================VMD TEST RESULT=========================")
             return True
-        
+
         else:
-            print('=========================VMD TEST RESULT=========================')
+            print("=========================VMD TEST RESULT=========================")
             print(f"VMD found but exited with an error code: {returncode}\n{stderr}")
-            print('=========================VMD TEST RESULT=========================')
+            print("=========================VMD TEST RESULT=========================")
             return False
 
     except FileNotFoundError:
-        print(f'''
+        print(
+            f"""
 =========================VMD TEST RESULT=========================
 FileNotFoundError: VMD executable not found at {VMD_EXEC}.
 Please ensure the path is correct and the program exists.
@@ -76,15 +80,18 @@ You can add the location of VMD to your environment variables by running the fol
 If you don't know where VMD is, try running:
     whereis vmd
 =========================VMD TEST RESULT=========================
-            ''')
+            """
+        )
         return False
     except Exception as e:
-        print(f'An error occurred while trying to execute VMD: {str(e)}')
+        print(f"An error occurred while trying to execute VMD: {str(e)}")
         return False
 
-def run_vmd_commands(commands: str,
-                     verbose: Optional[bool] = True) -> tuple[str, str, int]:
-    '''
+
+def run_vmd_commands(
+    commands: str, verbose: Optional[bool] = True
+) -> tuple[str, str, int]:
+    """
     pylift.vmd.run_vmd_commands
 
     Send and run commands in VMD.
@@ -95,13 +102,15 @@ def run_vmd_commands(commands: str,
 
     Returns:
         tuple: process output, prcess error, process returncode
-    '''
+    """
     try:
-        process = subprocess.Popen([VMD_EXEC, '-dispdev', 'text'],
-                                   stdin=subprocess.PIPE,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   text=True)
+        process = subprocess.Popen(
+            [VMD_EXEC, "-dispdev", "text"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
 
         stdout, stderr = process.communicate(commands)
 
@@ -114,29 +123,42 @@ def run_vmd_commands(commands: str,
 
     except FileNotFoundError:
         if verbose:
-            print('-----------------------------------------------------------------------')
+            print(
+                "-----------------------------------------------------------------------"
+            )
         print("VMD is not installed or not found in the environment")
         if verbose:
-            print('Run test_vmd_exec() from pysimm.apps.vmd for help')
-            print('------------------------------------------------------------------------')
+            print("Run test_vmd_exec() from pysimm.apps.vmd for help")
+            print(
+                "------------------------------------------------------------------------"
+            )
     except TypeError:
         if verbose:
-            print('------------------------------------------------------------------------')
-        print("The location of the VMD program has not been added to the env. variable VMD_EXEC")
+            print(
+                "------------------------------------------------------------------------"
+            )
+        print(
+            "The location of the VMD program has not been added to the env. variable VMD_EXEC"
+        )
         if verbose:
-            print('Run test_vmd_exec() from pysimm.apps.vmd for help')
-            print('------------------------------------------------------------------------')
+            print("Run test_vmd_exec() from pysimm.apps.vmd for help")
+            print(
+                "------------------------------------------------------------------------"
+            )
 
     return stdout, stderr, process.returncode
 
-def topo_write(molecule_in: str,
-                    lammps_out: str,
-                    bonds: Optional[bool] = True,
-                    angles: Optional[bool] = True,
-                    dihedrals: Optional[bool] = True,
-                    impropers: Optional[bool] = True,
-                    verbose: Optional[bool] = True) -> None:
-    '''
+
+def topo_write(
+    molecule_in: str,
+    lammps_out: str,
+    bonds: Optional[bool] = True,
+    angles: Optional[bool] = True,
+    dihedrals: Optional[bool] = True,
+    impropers: Optional[bool] = True,
+    verbose: Optional[bool] = True,
+) -> None:
+    """
     pylift.vmd.writelammpsdata
 
     Writes a skeleton LAMMPS file using TopoTools in VMD.
@@ -152,7 +174,7 @@ def topo_write(molecule_in: str,
 
     Returns:
         None
-    '''
+    """
     cmd = f"""
     mol new {molecule_in}
     package require topotools
@@ -169,9 +191,10 @@ def topo_write(molecule_in: str,
     topo writelammpsdata {lammps_out}
     exit
     """
-    run_vmd_commands(cmd, verbose = verbose)
+    run_vmd_commands(cmd, verbose=verbose)
     if verbose:
-        print(f"""
+        print(
+            f"""
 -----------------------------------------------------------
 Used TopoTools to write a skeleton lammps data file...
 Input: {molecule_in}
@@ -179,4 +202,5 @@ Output: {lammps_out}
 The user is cautioned to inspect the file
 Ensure proper information supplied in {lammps_out}
 -----------------------------------------------------------
-            """)
+            """
+        )

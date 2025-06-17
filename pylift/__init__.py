@@ -1,4 +1,4 @@
-'''
+"""
 pylift.__init__ module
 
 License: The MIT License (MIT)
@@ -22,10 +22,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-'''
+"""
+
 
 def pylift_help():
-    '''
+    """
     pylift.pylift_help
 
     Prints location of resources
@@ -35,8 +36,9 @@ def pylift_help():
 
     Returns:
         None
-    '''
-    print('''
+    """
+    print(
+        """
 Examples:
     PyLIFT/Examples/...
     all_atom: How to use PyLIFT to generate all atom LAMMPS input files
@@ -54,12 +56,14 @@ Developer:
           
 Questions?
     Please shoot me an email (bctapia@mit.edu) or post on the PyLIFT GitHub page (https://github.com/bctapia/PyLIFT)
-        ''')
+        """
+    )
+
 
 def pylift_license():
-    '''
+    """
     pylift.pylift_license
-    
+
     Prints the MIT License
 
     Arguments:
@@ -67,8 +71,9 @@ def pylift_license():
 
     Returns:
         None
-    '''
-    print('''
+    """
+    print(
+        """
 License: The MIT License (MIT)
 
 Copyright (c) 2024 Brandon C. Tapia
@@ -90,4 +95,5 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-        ''')
+        """
+    )
