@@ -374,7 +374,7 @@ def remove_h_old(
 
     return mol2_dict
 
-
+# TODO: stop this from renumbering atoms otherwise, adjust_charges needs to be run first which is annoying
 def remove_h(
     mol2_dict: dict,
     specific_atoms: Optional[list[int]] = None,
@@ -549,12 +549,15 @@ def remove_h(
             )
 
             if charge_distribution == "uniform" and len(renumbered_atom_dict) > 0:
+                
+                print(total_hydrogen_charge)
+                
                 uniform_charge_increment = total_hydrogen_charge / len(
                     renumbered_atom_dict
                 )
                 for atom in renumbered_atom_dict.values():
                     atom["charge"] = str(
-                        float(atom["charge"]) + uniform_charge_increment
+                        float(atom["charge"]) - uniform_charge_increment
                     )
 
     else:
@@ -680,7 +683,6 @@ def remove_h(
 
     return mol2_dict
 
-
 def assign_linkers(
     mol2_dict: dict, linker_atoms: list[int], linker_identifier: str = "L"
 ):
@@ -718,12 +720,14 @@ def assign_linkers(
     return mol2_dict
 
 
-# *need to deal with the issue of adjusting charges if using an amber chargestyle like abcg2
+# TODO: need to deal with the issue of adjusting charges if using an amber chargestyle like abcg2
+# TODO: 
 def adjust_charges(
     monomer_dict: dict,
     xmer_dict: dict,
     monomer_atoms: list[int],
     xmer_atoms: list[int],
+    charge_distribution = None,
     forced_charge: Optional[float] = float(0),
     verbose: Optional[bool] = True,
 ) -> dict:
@@ -749,9 +753,11 @@ def adjust_charges(
         monomer_dict similar dictionary
     """
 
+    # pulling in total charge from dictionary
     monomer_overall_charge = monomer_dict["auxinfo_dict"]["molecule_info"].get(
         "total_charge"
     )
+
     overall_charge_updated = float(0)
 
     if forced_charge is not None:
@@ -761,6 +767,7 @@ def adjust_charges(
         xmer_atom = xmer_atoms[i]
         xmer_atom_dict = xmer_dict["atom_dict"].get(str(xmer_atom))
         monomer_atom_dict = monomer_dict["atom_dict"].get(str(monomer_atom))
+        monomer_atom_dict_copy = monomer_atom_dict.copy()
 
         if not xmer_atom_dict:
             print(f"[adjust_polymer_charges] No xmer atom {xmer_atom} found")
@@ -778,12 +785,38 @@ def adjust_charges(
 
         if verbose:
             print(
-                f"Updated atom {monomer_atom} charge from {monomer_atom_dict.get('charge')} to {xmer_atom_charge}"
+                f"Updated atom {monomer_atom} charge from {monomer_atom_dict_copy.get('charge')} to {xmer_atom_charge}"
             )
 
-    # getting new overall charge information
+    if charge_distribution == "uniform":
+        # getting new overall charge information
+        for key, value in monomer_dict["atom_dict"].items():
+            overall_charge_updated += float(value["charge"])
+
+        uniform_charge_increment = (monomer_overall_charge - overall_charge_updated) / len(
+            monomer_dict["atom_dict"]
+        )
+
+        for key, value in monomer_dict["atom_dict"].items():
+            value["charge"] = float(value["charge"]) + uniform_charge_increment
+    else:
+        print('no charges updated')
+
+    return monomer_dict
+
+# TODO: if remove_h is adjusted to stop renumbering, this is pretty useless and can be removed
+# TODO: expand this to other methods
+def distribute_charges(monomer_dict):
+    
+    overall_charge_updated = float(0)
+
     for key, value in monomer_dict["atom_dict"].items():
         overall_charge_updated += float(value["charge"])
+
+    monomer_overall_charge = float(0)
+
+    print(monomer_overall_charge)
+    print(overall_charge_updated)
 
     uniform_charge_increment = (monomer_overall_charge - overall_charge_updated) / len(
         monomer_dict["atom_dict"]
@@ -795,7 +828,7 @@ def adjust_charges(
     return monomer_dict
 
 
-# *need to add user_match
+# TODO: add user_match
 def add_ff_params(
     lammps_dict: dict,
     ff_dict: dict,

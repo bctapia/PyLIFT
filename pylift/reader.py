@@ -423,7 +423,7 @@ def read_topo(
                 footer[i + 1] = {"info": line}
 
     header.update(
-        {"xlo": xlo, "xhi": xhi, "ylo": ylo, "yhi": yhi, "zlo": zlo, "zhi": zhi}
+        {"xlo": round(xlo-25,2), "xhi": round(xhi+25,2), "ylo": round(ylo-25,2), "yhi": round(yhi+25,2), "zlo": round(zlo-25,2), "zhi": round(zhi+25,2)}
     )
 
     lammps_dict = {
